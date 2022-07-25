@@ -1,0 +1,178 @@
+{
+  "treeData": [
+    {
+      "title": "Bed",
+      "instanceId": 1643616488666,
+      "expanded": true,
+      "children": [
+        { "title": "Pillow", "instanceId": 1643616475152 },
+        { "title": "Pillow", "instanceId": 1643616653199 }
+      ]
+    }
+  ],
+  "assetMetadata": {
+    "1643616475152": {
+      "shownAssetId": "RoboTHOR_pillow_sanglarka_1_v",
+      "name": "Pillow",
+      "position": {
+        "x": -0.05,
+        "z": 0.25,
+        "relativeAnchorToParent": 1,
+        "verticalAlignment": "above",
+        "xAlignment": 2,
+        "zAlignment": 2
+      },
+      "rotation": 0,
+      "randomness": { "dx": 0, "dz": 0, "dtheta": 0 },
+      "assetIds": {
+        "Pillow": [
+          "RoboTHOR_pillow_dvala_v",
+          "RoboTHOR_pillow_sanglarka_1_v",
+          "pillow_1",
+          "pillow_10",
+          "pillow_11",
+          "pillow_12",
+          "pillow_13",
+          "pillow_14",
+          "pillow_15",
+          "pillow_16",
+          "pillow_17",
+          "pillow_18",
+          "pillow_19",
+          "pillow_2",
+          "pillow_20",
+          "pillow_21",
+          "pillow_22",
+          "pillow_23",
+          "pillow_24",
+          "pillow_25",
+          "pillow_26",
+          "pillow_27",
+          "pillow_28",
+          "pillow_29",
+          "pillow_3",
+          "pillow_30",
+          "pillow_4",
+          "pillow_5",
+          "pillow_6",
+          "pillow_7",
+          "pillow_8",
+          "pillow_9"
+        ]
+      },
+      "parentInstanceId": 1643616488666,
+      "___cache": {
+        "globalXMeters": 3.204796882470449,
+        "globalZMeters": 2.209969639778137
+      }
+    },
+    "1643616488666": {
+      "shownAssetId": "Bed_30",
+      "name": "Bed",
+      "position": {
+        "x": 3.59619935353597,
+        "z": 2.9046225547790527,
+        "relativeAnchorToParent": 4,
+        "verticalAlignment": "nextTo",
+        "xAlignment": 1,
+        "zAlignment": 1
+      },
+      "rotation": 0,
+      "randomness": { "dx": 0, "dz": 0, "dtheta": 0 },
+      "assetIds": {
+        "Bed": [
+          "Bed_1",
+          "Bed_10",
+          "Bed_11",
+          "Bed_13",
+          "Bed_14",
+          "Bed_15",
+          "Bed_16",
+          "Bed_17",
+          "Bed_19",
+          "Bed_2",
+          "Bed_20",
+          "Bed_22",
+          "Bed_23",
+          "Bed_24",
+          "Bed_25",
+          "Bed_28",
+          "Bed_29",
+          "Bed_30",
+          "Bed_7",
+          "Bed_8",
+          "Bed_9"
+        ]
+      },
+      "___cache": {
+        "globalXMeters": 3.59619935353597,
+        "globalZMeters": 2.9046225547790527
+      }
+    },
+    "1643616653199": {
+      "shownAssetId": "RoboTHOR_pillow_sanglarka_1_v",
+      "name": "Pillow",
+      "position": {
+        "x": 0.05,
+        "z": 0.25,
+        "relativeAnchorToParent": 1,
+        "verticalAlignment": "above",
+        "xAlignment": 0,
+        "zAlignment": 2
+      },
+      "rotation": 0,
+      "randomness": { "dx": 0, "dz": 0, "dtheta": 0 },
+      "assetIds": {
+        "Pillow": [
+          "RoboTHOR_pillow_dvala_v",
+          "RoboTHOR_pillow_sanglarka_1_v",
+          "pillow_1",
+          "pillow_10",
+          "pillow_11",
+          "pillow_12",
+          "pillow_13",
+          "pillow_14",
+          "pillow_15",
+          "pillow_16",
+          "pillow_17",
+          "pillow_18",
+          "pillow_19",
+          "pillow_2",
+          "pillow_20",
+          "pillow_21",
+          "pillow_22",
+          "pillow_23",
+          "pillow_24",
+          "pillow_25",
+          "pillow_26",
+          "pillow_27",
+          "pillow_28",
+          "pillow_29",
+          "pillow_3",
+          "pillow_30",
+          "pillow_4",
+          "pillow_5",
+          "pillow_6",
+          "pillow_7",
+          "pillow_8",
+          "pillow_9"
+        ]
+      },
+      "parentInstanceId": 1643616488666,
+      "___cache": {
+        "globalXMeters": 3.9876018246014913,
+        "globalZMeters": 2.209969639778137
+      }
+    }
+  },
+  "groupProperties": {
+    "location": { "middle": false, "corner": true, "edge": true },
+    "roomWeights": {
+      "kitchens": 0,
+      "livingRooms": 0,
+      "bedrooms": 1,
+      "bathrooms": 0
+    },
+    "properties": { "allowDuplicates": true }
+  }
+}

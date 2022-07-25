@@ -1,0 +1,158 @@
+{
+  "treeData": [
+    {
+      "title": "Desk",
+      "instanceId": 1643618049609,
+      "expanded": true,
+      "children": [{ "title": "Chair", "instanceId": 1643618120307 }]
+    }
+  ],
+  "assetMetadata": {
+    "1643618049609": {
+      "shownAssetId": "Desk_311_1",
+      "name": "Desk",
+      "position": {
+        "x": 5.573254507780075,
+        "z": 3.1328945457935333,
+        "relativeAnchorToParent": 4,
+        "verticalAlignment": "nextTo",
+        "xAlignment": 1,
+        "zAlignment": 1
+      },
+      "rotation": 0,
+      "randomness": { "dx": 0, "dz": 0, "dtheta": 0 },
+      "assetIds": {
+        "Desk": [
+          "Desk_204_1",
+          "Desk_229_1",
+          "Desk_301_1",
+          "Desk_302_1",
+          "Desk_303_1",
+          "Desk_304_1",
+          "Desk_305_1",
+          "Desk_306_1",
+          "Desk_307_1_1",
+          "Desk_307_2_1",
+          "Desk_308_1_1",
+          "Desk_308_2_1",
+          "Desk_310_1",
+          "Desk_311_1",
+          "Desk_312_1",
+          "Desk_313_1",
+          "Desk_313_2",
+          "Desk_314_1",
+          "Desk_315_1",
+          "Desk_316_1",
+          "Desk_318_1",
+          "Desk_320_1_1",
+          "Desk_320_2_1",
+          "Desk_321_1",
+          "Desk_323_1",
+          "Desk_326_1",
+          "Desk_327_1",
+          "Desk_328_1",
+          "Desk_329_1",
+          "RoboTHOR_desk_alve",
+          "RoboTHOR_desk_fjallbo_v",
+          "RoboTHOR_desk_gustav",
+          "RoboTHOR_desk_lillasen",
+          "RoboTHOR_desk_lisabo",
+          "RoboTHOR_desk_norrasen"
+        ]
+      },
+      "___cache": {
+        "globalXMeters": 5.573254507780075,
+        "globalZMeters": 3.1328945457935333
+      }
+    },
+    "1643618120307": {
+      "shownAssetId": "Chair_002_1",
+      "name": "Chair",
+      "position": {
+        "x": 0,
+        "z": 0.11,
+        "relativeAnchorToParent": 7,
+        "verticalAlignment": "nextTo",
+        "xAlignment": 1,
+        "zAlignment": 2
+      },
+      "rotation": 180,
+      "randomness": { "dx": 1.04, "dz": 0, "dtheta": 30 },
+      "assetIds": {
+        "Chair": [
+          "Chair_002_1",
+          "Chair_002_2",
+          "Chair_002_3",
+          "Chair_007_1",
+          "Chair_007_2",
+          "Chair_007_3",
+          "Chair_007_4",
+          "Chair_007_5",
+          "Chair_201_1",
+          "Chair_203_1",
+          "Chair_203_2",
+          "Chair_203_3",
+          "Chair_204_1",
+          "Chair_204_2",
+          "Chair_204_3",
+          "Chair_204_4",
+          "Chair_204_5",
+          "Chair_204_6",
+          "Chair_204_7",
+          "Chair_204_8",
+          "Chair_205_1",
+          "Chair_205_2",
+          "Chair_205_3",
+          "Chair_205_4",
+          "Chair_205_5",
+          "Chair_210_1",
+          "Chair_210_2",
+          "Chair_210_3",
+          "Chair_215_1",
+          "Chair_215_2",
+          "Chair_215_3",
+          "Chair_223_1",
+          "Chair_224_1",
+          "Chair_227_1",
+          "Chair_230_1",
+          "Chair_303_1",
+          "Chair_303_2",
+          "Chair_304_1",
+          "Chair_305_1",
+          "Chair_307_1",
+          "Chair_307_2",
+          "Chair_311_1",
+          "Chair_313_1",
+          "Chair_318_1",
+          "RoboTHOR_chair_antnas",
+          "RoboTHOR_chair_extendable",
+          "RoboTHOR_chair_jokkmokk_v",
+          "RoboTHOR_chair_liatorp",
+          "RoboTHOR_chair_mella",
+          "RoboTHOR_chair_norden_gateleg",
+          "RoboTHOR_office_chair_allak",
+          "RoboTHOR_office_chair_jules",
+          "RoboTHOR_office_chair_molte_v",
+          "RoboTHOR_office_chair_sevnning",
+          "RoboTHOR_office_chair_skruvsta",
+          "RoboTHOR_office_chair_volmar"
+        ]
+      },
+      "parentInstanceId": 1643618049609,
+      "___cache": {
+        "globalXMeters": 5.573254507780075,
+        "globalZMeters": 3.918512598276138
+      }
+    }
+  },
+  "groupProperties": {
+    "location": { "middle": false, "corner": true, "edge": true },
+    "roomWeights": {
+      "kitchens": 0,
+      "livingRooms": 0,
+      "bedrooms": 1,
+      "bathrooms": 0
+    },
+    "properties": { "allowDuplicates": false }
+  }
+}

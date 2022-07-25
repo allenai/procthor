@@ -1,0 +1,2 @@
+include houses/databases/*.json
+include houses/databases/asset_groups/*.json

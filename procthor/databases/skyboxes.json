@@ -1,0 +1,90 @@
+{
+  "Sky1": {
+    "name": "Sky1",
+    "timeOfDay": "Midday"
+  },
+  "Sky2": {
+    "name": "Sky2",
+    "timeOfDay": "Midday"
+  },
+  "SkyAlbany": {
+    "name": "SkyAlbany",
+    "timeOfDay": "Midday"
+  },
+  "SkyAlbanyHill": {
+    "name": "SkyAlbanyHill",
+    "timeOfDay": "Midday"
+  },
+  "SkyDalyCity": {
+    "name": "SkyDalyCity",
+    "timeOfDay": "Midday"
+  },
+  "SkyEmeryville": {
+    "name": "SkyEmeryville",
+    "timeOfDay": "Midday"
+  },
+  "SkyGarden": {
+    "name": "SkyGarden",
+    "timeOfDay": "Midday"
+  },
+  "SkyGasworks": {
+    "name": "SkyGasworks",
+    "timeOfDay": "Midday"
+  },
+  "SkyMosconeCenter": {
+    "name": "SkyMosconeCenter",
+    "timeOfDay": "Midday"
+  },
+  "SkyMountain": {
+    "name": "SkyMountain",
+    "timeOfDay": "Midday"
+  },
+  "SkyOakland": {
+    "name": "SkyOakland",
+    "timeOfDay": "Midday"
+  },
+  "SkySeaStacks": {
+    "name": "SkySeaStacks",
+    "timeOfDay": "Midday"
+  },
+  "SkySFCityHall": {
+    "name": "SkySFCityHall",
+    "timeOfDay": "Midday"
+  },
+  "SkySFDowntown": {
+    "name": "SkySFDowntown",
+    "timeOfDay": "Midday"
+  },
+  "SkySFGarden": {
+    "name": "SkySFGarden",
+    "timeOfDay": "Midday"
+  },
+  "SkySnow": {
+    "name": "SkySnow",
+    "timeOfDay": "Midday"
+  },
+  "SkyNeighborhood": {
+    "name": "SkyNeighborhood",
+    "timeOfDay": "GoldenHour"
+  },
+  "SkySouthLakeUnion": {
+    "name": "SkySouthLakeUnion",
+    "timeOfDay": "GoldenHour"
+  },
+  "SkySunset": {
+    "name": "SkySunset",
+    "timeOfDay": "GoldenHour"
+  },
+  "SkyTreeFarm": {
+    "name": "SkyTreeFarm",
+    "timeOfDay": "GoldenHour"
+  },
+  "SkyTropical": {
+    "name": "SkyTropical",
+    "timeOfDay": "GoldenHour"
+  },
+  "Sky2Dusk": {
+    "name": "Sky2Dusk",
+    "timeOfDay": "BlueHour"
+  }
+}

@@ -1,0 +1,338 @@
+{
+  "treeData": [
+    {
+      "children": [
+        {
+          "instanceId": 1641464098765,
+          "title": "Television"
+        },
+        {
+          "children": [
+            {
+              "instanceId": 1641464240286,
+              "title": "ArmChair"
+            },
+            {
+              "instanceId": 1641464561890,
+              "title": "ArmChair-2"
+            }
+          ],
+          "expanded": true,
+          "instanceId": 1641464140309,
+          "title": "Sofa"
+        }
+      ],
+      "expanded": true,
+      "instanceId": 1641464059893,
+      "title": "TVStand"
+    }
+  ],
+  "assetMetadata": {
+    "1641464059893": {
+      "___cache": {
+        "globalXMeters": 2.3565294822057083,
+        "globalZMeters": 0.9795357187589008
+      },
+      "assetIds": {
+        "TVStand": [
+          "TV_Stand_201_1",
+          "TV_Stand_202_1",
+          "TV_Stand_204_1",
+          "TV_Stand_206_1",
+          "TV_Stand_206_2",
+          "TV_Stand_206_3",
+          "TV_Stand_211_1",
+          "TV_Stand_212_1",
+          "TV_Stand_220_1",
+          "TV_Stand_222_1",
+          "TV_Stand_223_1"
+        ]
+      },
+      "name": "TVStand",
+      "position": {
+        "relativeAnchorToParent": 4,
+        "verticalAlignment": "nextTo",
+        "x": 2.3565294822057083,
+        "xAlignment": 1,
+        "z": 0.9795357187589008,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 0,
+        "dx": 0,
+        "dz": 0
+      },
+      "rotation": 0,
+      "shownAssetId": "TV_Stand_206_3"
+    },
+    "1641464098765": {
+      "___cache": {
+        "globalXMeters": 2.3565294822057083,
+        "globalZMeters": 0.9795357187589008
+      },
+      "assetIds": {
+        "Television": [
+          "RoboTHOR_television_props_america_1_v",
+          "Television_1",
+          "Television_10",
+          "Television_11",
+          "Television_12",
+          "Television_13",
+          "Television_14",
+          "Television_15",
+          "Television_16",
+          "Television_17",
+          "Television_18",
+          "Television_19",
+          "Television_2",
+          "Television_20",
+          "Television_21",
+          "Television_22",
+          "Television_23",
+          "Television_24",
+          "Television_25",
+          "Television_26",
+          "Television_27",
+          "Television_28",
+          "Television_29",
+          "Television_2_1",
+          "Television_3",
+          "Television_30",
+          "Television_4",
+          "Television_5",
+          "Television_6",
+          "Television_7",
+          "Television_8",
+          "Television_9"
+        ]
+      },
+      "name": "Television",
+      "parentInstanceId": 1641464059893,
+      "position": {
+        "relativeAnchorToParent": 4,
+        "verticalAlignment": "above",
+        "x": 0,
+        "xAlignment": 1,
+        "z": 0,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 0,
+        "dx": 0,
+        "dz": 0
+      },
+      "rotation": 0,
+      "shownAssetId": "RoboTHOR_television_props_america_1_v"
+    },
+    "1641464140309": {
+      "___cache": {
+        "globalXMeters": 2.3565294822057083,
+        "globalZMeters": 3.9848048694928484
+      },
+      "assetIds": {
+        "Sofa": [
+          "RoboTHOR_sofa_alrid",
+          "RoboTHOR_sofa_ektorp_v",
+          "RoboTHOR_sofa_kramfors",
+          "RoboTHOR_sofa_solsta",
+          "RoboTHOR_sofa_vreta",
+          "Sofa_201_1",
+          "Sofa_201_2",
+          "Sofa_201_3",
+          "Sofa_201_4",
+          "Sofa_203_1",
+          "Sofa_204_1",
+          "Sofa_205_1",
+          "Sofa_205_2",
+          "Sofa_206_1",
+          "Sofa_207_1",
+          "Sofa_207_2",
+          "Sofa_207_3",
+          "Sofa_207_4",
+          "Sofa_207_5",
+          "Sofa_208_1",
+          "Sofa_210_1",
+          "Sofa_213_1",
+          "Sofa_214_1",
+          "Sofa_214_2",
+          "Sofa_215_1",
+          "Sofa_216_1",
+          "Sofa_216_2",
+          "Sofa_216_3",
+          "Sofa_216_4",
+          "Sofa_218_1",
+          "Sofa_218_2",
+          "Sofa_220_1",
+          "Sofa_221_1",
+          "Sofa_223_1",
+          "Sofa_223_2",
+          "Sofa_223_3",
+          "Sofa_227_1"
+        ]
+      },
+      "name": "Sofa",
+      "parentInstanceId": 1641464059893,
+      "position": {
+        "relativeAnchorToParent": 7,
+        "verticalAlignment": "nextTo",
+        "x": 0,
+        "xAlignment": 1,
+        "z": 2.23,
+        "zAlignment": 2
+      },
+      "randomness": {
+        "dtheta": 0,
+        "dx": 0,
+        "dz": 1.1400000000000001
+      },
+      "rotation": 180,
+      "shownAssetId": "RoboTHOR_sofa_alrid"
+    },
+    "1641464240286": {
+      "___cache": {
+        "globalXMeters": 4.095534818747855,
+        "globalZMeters": 3.8548048694928485
+      },
+      "assetIds": {
+        "ArmChair": [
+          "ArmChair_213_1",
+          "ArmChair_216_1",
+          "Armchair_201_1",
+          "Armchair_201_2",
+          "Armchair_201_3",
+          "Armchair_201_4",
+          "Armchair_201_5",
+          "Armchair_202_1",
+          "Armchair_203_1",
+          "Armchair_204_1",
+          "Armchair_205_1_1",
+          "Armchair_205_1_2",
+          "Armchair_205_2_1",
+          "Armchair_207_1",
+          "Armchair_207_2",
+          "Armchair_207_3",
+          "Armchair_207_4",
+          "Armchair_208_1",
+          "Armchair_208_2",
+          "Armchair_208_3",
+          "Armchair_208_4",
+          "Armchair_208_5",
+          "Armchair_210_1",
+          "Armchair_217_1",
+          "Armchair_219_1",
+          "Armchair_219_2",
+          "Armchair_220_1",
+          "Armchair_222_1",
+          "Armchair_225_1",
+          "Armchair_226_1",
+          "Armchair_227_1",
+          "Armchair_230_1",
+          "RoboTHOR_armchair_ekenas_v",
+          "RoboTHOR_armchair_ektorp",
+          "RoboTHOR_armchair_emmabo",
+          "RoboTHOR_armchair_karlstad",
+          "RoboTHOR_armchair_overallt",
+          "RoboTHOR_armchair_tullsta"
+        ]
+      },
+      "name": "ArmChair",
+      "parentInstanceId": 1641464140309,
+      "position": {
+        "relativeAnchorToParent": 5,
+        "verticalAlignment": "nextTo",
+        "x": 0.31999999999999995,
+        "xAlignment": 0,
+        "z": -0.13,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 35,
+        "dx": 0,
+        "dz": 0
+      },
+      "rotation": 135,
+      "shownAssetId": "ArmChair_213_1"
+    },
+    "1641464561890": {
+      "___cache": {
+        "globalXMeters": 0.45934537947508397,
+        "globalZMeters": 3.8548048694928485
+      },
+      "assetIds": {
+        "ArmChair": [
+          "ArmChair_213_1",
+          "ArmChair_216_1",
+          "Armchair_201_1",
+          "Armchair_201_2",
+          "Armchair_201_3",
+          "Armchair_201_4",
+          "Armchair_201_5",
+          "Armchair_202_1",
+          "Armchair_203_1",
+          "Armchair_204_1",
+          "Armchair_205_1_1",
+          "Armchair_205_1_2",
+          "Armchair_205_2_1",
+          "Armchair_207_1",
+          "Armchair_207_2",
+          "Armchair_207_3",
+          "Armchair_207_4",
+          "Armchair_208_1",
+          "Armchair_208_2",
+          "Armchair_208_3",
+          "Armchair_208_4",
+          "Armchair_208_5",
+          "Armchair_210_1",
+          "Armchair_217_1",
+          "Armchair_219_1",
+          "Armchair_219_2",
+          "Armchair_220_1",
+          "Armchair_222_1",
+          "Armchair_225_1",
+          "Armchair_226_1",
+          "Armchair_227_1",
+          "Armchair_230_1",
+          "RoboTHOR_armchair_ekenas_v",
+          "RoboTHOR_armchair_ektorp",
+          "RoboTHOR_armchair_emmabo",
+          "RoboTHOR_armchair_karlstad",
+          "RoboTHOR_armchair_overallt",
+          "RoboTHOR_armchair_tullsta"
+        ]
+      },
+      "name": "ArmChair-2",
+      "parentInstanceId": 1641464140309,
+      "position": {
+        "relativeAnchorToParent": 3,
+        "verticalAlignment": "nextTo",
+        "x": -0.32,
+        "xAlignment": 2,
+        "z": -0.13,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 35,
+        "dx": 0,
+        "dz": 0
+      },
+      "rotation": 225,
+      "shownAssetId": "ArmChair_216_1"
+    }
+  },
+  "groupProperties": {
+    "location": {
+      "corner": true,
+      "edge": true,
+      "middle": true
+    },
+    "properties": {
+      "allowDuplicates": false
+    },
+    "roomWeights": {
+      "bathrooms": 0,
+      "bedrooms": 1,
+      "kitchens": 0,
+      "livingRooms": 1
+    }
+  }
+}

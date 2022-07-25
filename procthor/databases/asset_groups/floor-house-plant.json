@@ -1,0 +1,61 @@
+{
+  "assetMetadata": {
+    "1642479436419": {
+      "___cache": {
+        "globalXMeters": 0,
+        "globalZMeters": 0
+      },
+      "assetIds": {
+        "HousePlant": [
+          "Houseplant_11",
+          "Houseplant_16",
+          "Houseplant_18",
+          "Houseplant_26",
+          "Houseplant_27",
+          "Houseplant_29",
+          "Houseplant_6",
+          "Houseplant_7",
+          "Houseplant_17"
+        ]
+      },
+      "name": "HousePlant",
+      "position": {
+        "relativeAnchorToParent": 4,
+        "verticalAlignment": "nextTo",
+        "x": 0,
+        "xAlignment": 1,
+        "z": 0,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 180,
+        "dx": 0,
+        "dz": 0
+      },
+      "rotation": 0,
+      "shownAssetId": "Houseplant_11"
+    }
+  },
+  "groupProperties": {
+    "location": {
+      "corner": true,
+      "edge": true,
+      "middle": false
+    },
+    "properties": {
+      "allowDuplicates": false
+    },
+    "roomWeights": {
+      "bathrooms": 0,
+      "bedrooms": 1,
+      "kitchens": 1,
+      "livingRooms": 1
+    }
+  },
+  "treeData": [
+    {
+      "instanceId": 1642479436419,
+      "title": "HousePlant"
+    }
+  ]
+}

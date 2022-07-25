@@ -1,0 +1,111 @@
+{
+  "assetMetadata": {
+    "1642478488841": {
+      "___cache": {
+        "globalXMeters": 3.2772130568822226,
+        "globalZMeters": 1.4991506536801655
+      },
+      "assetIds": {
+        "Sink": [
+          "Sink_1",
+          "Sink_15",
+          "Sink_19",
+          "Sink_20",
+          "Sink_26",
+          "Sink_4"
+        ]
+      },
+      "name": "Sink",
+      "position": {
+        "relativeAnchorToParent": 4,
+        "verticalAlignment": "nextTo",
+        "x": 3.2772130568822226,
+        "xAlignment": 1,
+        "z": 1.4991506536801655,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 0,
+        "dx": 0,
+        "dz": 0
+      },
+      "rotation": 0,
+      "shownAssetId": "Sink_1"
+    },
+    "1642497201988": {
+      "___cache": {
+        "globalXMeters": 3.2772130568822226,
+        "globalZMeters": 1.2721618660291034
+      },
+      "assetIds": {
+        "Faucet": [
+          "Bathroom_Faucet_1",
+          "Bathroom_Faucet_10",
+          "Bathroom_Faucet_14",
+          "Bathroom_Faucet_15",
+          "Bathroom_Faucet_17",
+          "Bathroom_Faucet_19",
+          "Bathroom_Faucet_2",
+          "Bathroom_Faucet_20",
+          "Bathroom_Faucet_21",
+          "Bathroom_Faucet_22",
+          "Bathroom_Faucet_25",
+          "Bathroom_Faucet_26",
+          "Bathroom_Faucet_27",
+          "Bathroom_Faucet_28",
+          "Bathroom_Faucet_3",
+          "Bathroom_Faucet_30",
+          "Bathroom_Faucet_5",
+          "Bathroom_Faucet_7",
+          "Bathroom_Faucet_8"
+        ]
+      },
+      "name": "Faucet",
+      "parentInstanceId": 1642478488841,
+      "position": {
+        "relativeAnchorToParent": 1,
+        "verticalAlignment": "above",
+        "x": 0,
+        "xAlignment": 1,
+        "z": 0.005,
+        "zAlignment": 2
+      },
+      "randomness": {
+        "dtheta": 0,
+        "dx": 0,
+        "dz": 0
+      },
+      "rotation": 0,
+      "shownAssetId": "Bathroom_Faucet_20"
+    }
+  },
+  "groupProperties": {
+    "location": {
+      "corner": true,
+      "edge": true,
+      "middle": false
+    },
+    "properties": {
+      "allowDuplicates": false
+    },
+    "roomWeights": {
+      "bathrooms": 1,
+      "bedrooms": 0,
+      "kitchens": 0,
+      "livingRooms": 0
+    }
+  },
+  "treeData": [
+    {
+      "children": [
+        {
+          "instanceId": 1642497201988,
+          "title": "Faucet"
+        }
+      ],
+      "expanded": true,
+      "instanceId": 1642478488841,
+      "title": "Sink"
+    }
+  ]
+}

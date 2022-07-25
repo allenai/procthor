@@ -1,0 +1,129 @@
+{
+  "assetMetadata": {
+    "1641465194591": {
+      "___cache": {
+        "globalXMeters": 1.6907401879628499,
+        "globalZMeters": 0.8622774958610535
+      },
+      "assetIds": {
+        "TVStand": [
+          "TV_Stand_201_1",
+          "TV_Stand_202_1",
+          "TV_Stand_204_1",
+          "TV_Stand_206_1",
+          "TV_Stand_206_2",
+          "TV_Stand_206_3",
+          "TV_Stand_211_1",
+          "TV_Stand_212_1",
+          "TV_Stand_220_1",
+          "TV_Stand_222_1",
+          "TV_Stand_223_1"
+        ]
+      },
+      "name": "TVStand",
+      "position": {
+        "relativeAnchorToParent": 4,
+        "verticalAlignment": "nextTo",
+        "x": 1.6907401879628499,
+        "xAlignment": 1,
+        "z": 0.8622774958610535,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 0,
+        "dx": 0,
+        "dz": 0
+      },
+      "rotation": 0,
+      "shownAssetId": "TV_Stand_201_1"
+    },
+    "1641465207591": {
+      "___cache": {
+        "globalXMeters": 1.6907401879628499,
+        "globalZMeters": 0.8622774958610535
+      },
+      "assetIds": {
+        "Television": [
+          "RoboTHOR_television_props_america_1_v",
+          "Television_1",
+          "Television_10",
+          "Television_11",
+          "Television_12",
+          "Television_13",
+          "Television_14",
+          "Television_15",
+          "Television_16",
+          "Television_17",
+          "Television_18",
+          "Television_19",
+          "Television_2",
+          "Television_20",
+          "Television_21",
+          "Television_22",
+          "Television_23",
+          "Television_24",
+          "Television_25",
+          "Television_26",
+          "Television_27",
+          "Television_28",
+          "Television_29",
+          "Television_2_1",
+          "Television_3",
+          "Television_30",
+          "Television_4",
+          "Television_5",
+          "Television_6",
+          "Television_7",
+          "Television_8",
+          "Television_9"
+        ]
+      },
+      "name": "Television",
+      "parentInstanceId": 1641465194591,
+      "position": {
+        "relativeAnchorToParent": 4,
+        "verticalAlignment": "above",
+        "x": 0,
+        "xAlignment": 1,
+        "z": 0,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 0,
+        "dx": 0,
+        "dz": 0
+      },
+      "rotation": 0,
+      "shownAssetId": "RoboTHOR_television_props_america_1_v"
+    }
+  },
+  "groupProperties": {
+    "location": {
+      "corner": true,
+      "edge": true,
+      "middle": false
+    },
+    "properties": {
+      "allowDuplicates": false
+    },
+    "roomWeights": {
+      "bathrooms": 0,
+      "bedrooms": 1,
+      "kitchens": 0,
+      "livingRooms": 1
+    }
+  },
+  "treeData": [
+    {
+      "children": [
+        {
+          "instanceId": 1641465207591,
+          "title": "Television"
+        }
+      ],
+      "expanded": true,
+      "instanceId": 1641465194591,
+      "title": "TVStand"
+    }
+  ]
+}

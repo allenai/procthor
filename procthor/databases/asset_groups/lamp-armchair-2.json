@@ -1,0 +1,156 @@
+{
+  "assetMetadata": {
+    "1641454732197": {
+      "___cache": {
+        "globalXMeters": 1.8197866280873616,
+        "globalZMeters": 1.1646634419759114
+      },
+      "assetIds": {
+        "ArmChair": [
+          "ArmChair_213_1",
+          "ArmChair_216_1",
+          "Armchair_201_1",
+          "Armchair_201_2",
+          "Armchair_201_3",
+          "Armchair_201_4",
+          "Armchair_201_5",
+          "Armchair_202_1",
+          "Armchair_203_1",
+          "Armchair_204_1",
+          "Armchair_205_1_1",
+          "Armchair_205_1_2",
+          "Armchair_205_2_1",
+          "Armchair_207_1",
+          "Armchair_207_2",
+          "Armchair_207_3",
+          "Armchair_207_4",
+          "Armchair_208_1",
+          "Armchair_208_2",
+          "Armchair_208_3",
+          "Armchair_208_4",
+          "Armchair_208_5",
+          "Armchair_210_1",
+          "Armchair_217_1",
+          "Armchair_219_1",
+          "Armchair_219_2",
+          "Armchair_220_1",
+          "Armchair_222_1",
+          "Armchair_225_1",
+          "Armchair_226_1",
+          "Armchair_227_1",
+          "Armchair_230_1",
+          "RoboTHOR_armchair_ekenas_v",
+          "RoboTHOR_armchair_ektorp",
+          "RoboTHOR_armchair_emmabo",
+          "RoboTHOR_armchair_karlstad",
+          "RoboTHOR_armchair_overallt",
+          "RoboTHOR_armchair_tullsta"
+        ]
+      },
+      "name": "ArmChair",
+      "position": {
+        "relativeAnchorToParent": 4,
+        "verticalAlignment": "nextTo",
+        "x": 1.8197866280873616,
+        "xAlignment": 1,
+        "z": 1.1646634419759114,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 0,
+        "dx": 1.22,
+        "dz": 0
+      },
+      "rotation": 0,
+      "shownAssetId": "ArmChair_213_1"
+    },
+    "1641463624686": {
+      "___cache": {
+        "globalXMeters": 0.8407464053233464,
+        "globalZMeters": 1.1646634419759114
+      },
+      "assetIds": {
+        "FloorLamp": [
+          "Floor_Lamp_1",
+          "Floor_Lamp_10",
+          "Floor_Lamp_11",
+          "Floor_Lamp_12",
+          "Floor_Lamp_13",
+          "Floor_Lamp_14",
+          "Floor_Lamp_15",
+          "Floor_Lamp_16",
+          "Floor_Lamp_17",
+          "Floor_Lamp_18",
+          "Floor_Lamp_19",
+          "Floor_Lamp_2",
+          "Floor_Lamp_20",
+          "Floor_Lamp_21",
+          "Floor_Lamp_22",
+          "Floor_Lamp_23",
+          "Floor_Lamp_24",
+          "Floor_Lamp_25",
+          "Floor_Lamp_26",
+          "Floor_Lamp_27",
+          "Floor_Lamp_28",
+          "Floor_Lamp_29",
+          "Floor_Lamp_3",
+          "Floor_Lamp_30",
+          "Floor_Lamp_4",
+          "Floor_Lamp_5",
+          "Floor_Lamp_6",
+          "Floor_Lamp_7",
+          "Floor_Lamp_8",
+          "Floor_Lamp_9",
+          "RoboTHOR_floor_lamp_holmo_v",
+          "RoboTHOR_floor_lamp_not_v"
+        ]
+      },
+      "name": "FloorLamp",
+      "parentInstanceId": 1641454732197,
+      "position": {
+        "relativeAnchorToParent": 3,
+        "verticalAlignment": "nextTo",
+        "x": -0.19,
+        "xAlignment": 2,
+        "z": 0,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 180,
+        "dx": 0,
+        "dz": 0.8
+      },
+      "rotation": 0,
+      "shownAssetId": "Floor_Lamp_1"
+    }
+  },
+  "groupProperties": {
+    "location": {
+      "corner": true,
+      "edge": true,
+      "middle": false
+    },
+    "properties": {
+      "allowDuplicates": true
+    },
+    "roomWeights": {
+      "bathrooms": 0,
+      "bedrooms": 1,
+      "kitchens": 0,
+      "livingRooms": 1
+    }
+  },
+  "treeData": [
+    {
+      "children": [
+        {
+          "instanceId": 1641463624686,
+          "title": "FloorLamp"
+        }
+      ],
+      "expanded": true,
+      "instanceId": 1641454732197,
+      "title": "ArmChair"
+    }
+  ]
+}

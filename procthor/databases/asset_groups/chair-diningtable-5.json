@@ -1,0 +1,418 @@
+{
+  "assetMetadata": {
+    "1641464725629": {
+      "___cache": {
+        "globalXMeters": 3.854768455028534,
+        "globalZMeters": 2.1349486827850344
+      },
+      "assetIds": {
+        "DiningTable": [
+          "Dining_Table_201_1",
+          "Dining_Table_203_1",
+          "Dining_Table_204_1",
+          "Dining_Table_208_1",
+          "Dining_Table_208_2",
+          "Dining_Table_218_1",
+          "Dining_Table_221_1",
+          "Dining_Table_223_1",
+          "Dining_Table_227_1",
+          "Dining_Table_230_1",
+          "Dining_Table_27_1",
+          "RoboTHOR_dining_table_antas",
+          "RoboTHOR_dining_table_extendable",
+          "RoboTHOR_dining_table_jokkmokk_v",
+          "RoboTHOR_dining_table_mella"
+        ]
+      },
+      "name": "DiningTable",
+      "position": {
+        "relativeAnchorToParent": 4,
+        "verticalAlignment": "nextTo",
+        "x": 3.854768455028534,
+        "xAlignment": 1,
+        "z": 2.1349486827850344,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 0,
+        "dx": 0,
+        "dz": 0
+      },
+      "rotation": 0,
+      "shownAssetId": "Dining_Table_201_1"
+    },
+    "1641464737086": {
+      "___cache": {
+        "globalXMeters": 3.3696257305145263,
+        "globalZMeters": 1.5410967826843263
+      },
+      "assetIds": {
+        "Chair": [
+          "Chair_002_1",
+          "Chair_002_2",
+          "Chair_002_3",
+          "Chair_007_1",
+          "Chair_007_2",
+          "Chair_007_3",
+          "Chair_007_4",
+          "Chair_007_5",
+          "Chair_201_1",
+          "Chair_203_1",
+          "Chair_203_2",
+          "Chair_203_3",
+          "Chair_204_1",
+          "Chair_204_2",
+          "Chair_204_3",
+          "Chair_204_4",
+          "Chair_204_5",
+          "Chair_204_6",
+          "Chair_204_7",
+          "Chair_204_8",
+          "Chair_205_1",
+          "Chair_205_2",
+          "Chair_205_3",
+          "Chair_205_4",
+          "Chair_205_5",
+          "Chair_210_1",
+          "Chair_210_2",
+          "Chair_210_3",
+          "Chair_215_1",
+          "Chair_215_2",
+          "Chair_215_3",
+          "Chair_223_1",
+          "Chair_224_1",
+          "Chair_227_1",
+          "Chair_230_1",
+          "Chair_303_1",
+          "Chair_303_2",
+          "Chair_304_1",
+          "Chair_305_1",
+          "Chair_307_1",
+          "Chair_307_2",
+          "Chair_311_1",
+          "Chair_313_1",
+          "Chair_318_1",
+          "RoboTHOR_chair_antnas",
+          "RoboTHOR_chair_extendable",
+          "RoboTHOR_chair_jokkmokk_v",
+          "RoboTHOR_chair_liatorp",
+          "RoboTHOR_chair_mella",
+          "RoboTHOR_chair_norden_gateleg",
+          "RoboTHOR_office_chair_allak",
+          "RoboTHOR_office_chair_jules",
+          "RoboTHOR_office_chair_molte_v",
+          "RoboTHOR_office_chair_sevnning",
+          "RoboTHOR_office_chair_skruvsta",
+          "RoboTHOR_office_chair_volmar"
+        ]
+      },
+      "name": "Chair",
+      "parentInstanceId": 1641464725629,
+      "position": {
+        "relativeAnchorToParent": 0,
+        "verticalAlignment": "nextTo",
+        "x": 0.17,
+        "xAlignment": 0,
+        "z": -0.1,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 27,
+        "dx": 0,
+        "dz": 0.10999999999999999
+      },
+      "rotation": 0,
+      "shownAssetId": "Chair_002_1"
+    },
+    "1641464841365": {
+      "___cache": {
+        "globalXMeters": 4.904330406188965,
+        "globalZMeters": 2.1349486827850344
+      },
+      "assetIds": {
+        "Chair": [
+          "Chair_002_1",
+          "Chair_002_2",
+          "Chair_002_3",
+          "Chair_007_1",
+          "Chair_007_2",
+          "Chair_007_3",
+          "Chair_007_4",
+          "Chair_007_5",
+          "Chair_201_1",
+          "Chair_203_1",
+          "Chair_203_2",
+          "Chair_203_3",
+          "Chair_204_1",
+          "Chair_204_2",
+          "Chair_204_3",
+          "Chair_204_4",
+          "Chair_204_5",
+          "Chair_204_6",
+          "Chair_204_7",
+          "Chair_204_8",
+          "Chair_205_1",
+          "Chair_205_2",
+          "Chair_205_3",
+          "Chair_205_4",
+          "Chair_205_5",
+          "Chair_210_1",
+          "Chair_210_2",
+          "Chair_210_3",
+          "Chair_215_1",
+          "Chair_215_2",
+          "Chair_215_3",
+          "Chair_223_1",
+          "Chair_224_1",
+          "Chair_227_1",
+          "Chair_230_1",
+          "Chair_303_1",
+          "Chair_303_2",
+          "Chair_304_1",
+          "Chair_305_1",
+          "Chair_307_1",
+          "Chair_307_2",
+          "Chair_311_1",
+          "Chair_313_1",
+          "Chair_318_1",
+          "RoboTHOR_chair_antnas",
+          "RoboTHOR_chair_extendable",
+          "RoboTHOR_chair_jokkmokk_v",
+          "RoboTHOR_chair_liatorp",
+          "RoboTHOR_chair_mella",
+          "RoboTHOR_chair_norden_gateleg",
+          "RoboTHOR_office_chair_allak",
+          "RoboTHOR_office_chair_jules",
+          "RoboTHOR_office_chair_molte_v",
+          "RoboTHOR_office_chair_sevnning",
+          "RoboTHOR_office_chair_skruvsta",
+          "RoboTHOR_office_chair_volmar"
+        ]
+      },
+      "name": "Chair",
+      "parentInstanceId": 1641464725629,
+      "position": {
+        "relativeAnchorToParent": 5,
+        "verticalAlignment": "nextTo",
+        "x": 0.16,
+        "xAlignment": 1,
+        "z": 0,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 17,
+        "dx": 0.17999999999999994,
+        "dz": 0.10999999999999999
+      },
+      "rotation": 90,
+      "shownAssetId": "Chair_002_1"
+    },
+    "1641464906140": {
+      "___cache": {
+        "globalXMeters": 2.805206503868103,
+        "globalZMeters": 2.1349486827850344
+      },
+      "assetIds": {
+        "Chair": [
+          "Chair_002_1",
+          "Chair_002_2",
+          "Chair_002_3",
+          "Chair_007_1",
+          "Chair_007_2",
+          "Chair_007_3",
+          "Chair_007_4",
+          "Chair_007_5",
+          "Chair_201_1",
+          "Chair_203_1",
+          "Chair_203_2",
+          "Chair_203_3",
+          "Chair_204_1",
+          "Chair_204_2",
+          "Chair_204_3",
+          "Chair_204_4",
+          "Chair_204_5",
+          "Chair_204_6",
+          "Chair_204_7",
+          "Chair_204_8",
+          "Chair_205_1",
+          "Chair_205_2",
+          "Chair_205_3",
+          "Chair_205_4",
+          "Chair_205_5",
+          "Chair_210_1",
+          "Chair_210_2",
+          "Chair_210_3",
+          "Chair_215_1",
+          "Chair_215_2",
+          "Chair_215_3",
+          "Chair_223_1",
+          "Chair_224_1",
+          "Chair_227_1",
+          "Chair_230_1",
+          "Chair_303_1",
+          "Chair_303_2",
+          "Chair_304_1",
+          "Chair_305_1",
+          "Chair_307_1",
+          "Chair_307_2",
+          "Chair_311_1",
+          "Chair_313_1",
+          "Chair_318_1",
+          "RoboTHOR_chair_antnas",
+          "RoboTHOR_chair_extendable",
+          "RoboTHOR_chair_jokkmokk_v",
+          "RoboTHOR_chair_liatorp",
+          "RoboTHOR_chair_mella",
+          "RoboTHOR_chair_norden_gateleg",
+          "RoboTHOR_office_chair_allak",
+          "RoboTHOR_office_chair_jules",
+          "RoboTHOR_office_chair_molte_v",
+          "RoboTHOR_office_chair_sevnning",
+          "RoboTHOR_office_chair_skruvsta",
+          "RoboTHOR_office_chair_volmar"
+        ]
+      },
+      "name": "Chair",
+      "parentInstanceId": 1641464725629,
+      "position": {
+        "relativeAnchorToParent": 3,
+        "verticalAlignment": "nextTo",
+        "x": -0.16,
+        "xAlignment": 1,
+        "z": 0,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 17,
+        "dx": 0.17999999999999994,
+        "dz": 0.10999999999999999
+      },
+      "rotation": 270,
+      "shownAssetId": "Chair_002_1"
+    },
+    "1641464982917": {
+      "___cache": {
+        "globalXMeters": 4.339911179542542,
+        "globalZMeters": 1.5410967826843263
+      },
+      "assetIds": {
+        "Chair": [
+          "Chair_002_1",
+          "Chair_002_2",
+          "Chair_002_3",
+          "Chair_007_1",
+          "Chair_007_2",
+          "Chair_007_3",
+          "Chair_007_4",
+          "Chair_007_5",
+          "Chair_201_1",
+          "Chair_203_1",
+          "Chair_203_2",
+          "Chair_203_3",
+          "Chair_204_1",
+          "Chair_204_2",
+          "Chair_204_3",
+          "Chair_204_4",
+          "Chair_204_5",
+          "Chair_204_6",
+          "Chair_204_7",
+          "Chair_204_8",
+          "Chair_205_1",
+          "Chair_205_2",
+          "Chair_205_3",
+          "Chair_205_4",
+          "Chair_205_5",
+          "Chair_210_1",
+          "Chair_210_2",
+          "Chair_210_3",
+          "Chair_215_1",
+          "Chair_215_2",
+          "Chair_215_3",
+          "Chair_223_1",
+          "Chair_224_1",
+          "Chair_227_1",
+          "Chair_230_1",
+          "Chair_303_1",
+          "Chair_303_2",
+          "Chair_304_1",
+          "Chair_305_1",
+          "Chair_307_1",
+          "Chair_307_2",
+          "Chair_311_1",
+          "Chair_313_1",
+          "Chair_318_1",
+          "RoboTHOR_chair_antnas",
+          "RoboTHOR_chair_extendable",
+          "RoboTHOR_chair_jokkmokk_v",
+          "RoboTHOR_chair_liatorp",
+          "RoboTHOR_chair_mella",
+          "RoboTHOR_chair_norden_gateleg",
+          "RoboTHOR_office_chair_allak",
+          "RoboTHOR_office_chair_jules",
+          "RoboTHOR_office_chair_molte_v",
+          "RoboTHOR_office_chair_sevnning",
+          "RoboTHOR_office_chair_skruvsta",
+          "RoboTHOR_office_chair_volmar"
+        ]
+      },
+      "name": "Chair",
+      "parentInstanceId": 1641464725629,
+      "position": {
+        "relativeAnchorToParent": 2,
+        "verticalAlignment": "nextTo",
+        "x": -0.17,
+        "xAlignment": 2,
+        "z": -0.1,
+        "zAlignment": 1
+      },
+      "randomness": {
+        "dtheta": 27,
+        "dx": 0,
+        "dz": 0.10999999999999999
+      },
+      "rotation": 0,
+      "shownAssetId": "Chair_002_1"
+    }
+  },
+  "groupProperties": {
+    "location": {
+      "corner": true,
+      "edge": true,
+      "middle": true
+    },
+    "properties": {
+      "allowDuplicates": false
+    },
+    "roomWeights": {
+      "bathrooms": 0,
+      "bedrooms": 1,
+      "kitchens": 1,
+      "livingRooms": 1
+    }
+  },
+  "treeData": [
+    {
+      "children": [
+        {
+          "instanceId": 1641464737086,
+          "title": "Chair"
+        },
+        {
+          "instanceId": 1641464982917,
+          "title": "Chair"
+        },
+        {
+          "instanceId": 1641464841365,
+          "title": "Chair"
+        },
+        {
+          "instanceId": 1641464906140,
+          "title": "Chair"
+        }
+      ],
+      "expanded": true,
+      "instanceId": 1641464725629,
+      "title": "DiningTable"
+    }
+  ]
+}
