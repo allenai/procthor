@@ -14,7 +14,7 @@ export PYTHONPATH=$PYTHONPATH:$PWD
 python scripts/example.py
 ```
 
-# Citation
+## Citation
 
 This code is used to generate houses for the [ProcTHOR](https://procthor.allenai.org/) paper:
 
