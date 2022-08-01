@@ -4,10 +4,6 @@
 
 ## Installation
 
-```bash
-pip install procthor
-```
-
 Example:
 ```bash
 export PYTHONPATH=$PYTHONPATH:$PWD
