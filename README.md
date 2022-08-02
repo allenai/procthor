@@ -1,12 +1,8 @@
 # ProcTHOR
 
-🏡 Procedurally Generate Houses compatible with AI2-THOR.
+🏡 The code to procedurally generate houses for the ProcTHOR paper.
 
-## Installation
-
-```bash
-pip install procthor
-```
+## Example
 
 Example:
 ```bash
