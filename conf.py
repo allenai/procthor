@@ -18,9 +18,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "Houses"
-copyright = "2022, Allen Institute for AI"
-author = "Allen Institute for AI"
+project = "procthor"
+copyright = ""
+author = ""
 
 # The full version, including alpha/beta/rc tags
 release = "0.0.1"
