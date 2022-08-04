@@ -4,15 +4,16 @@ import random
 from typing import Optional, Tuple
 
 import numpy as np
+
 from procthor.constants import OUTDOOR_ROOM_ID
 
-AVERAGE_ROOM_SIZE = 3
+DEFAULT_AVERAGE_ROOM_SIZE = 3
 """Average room size in meters"""
 
-MIN_HOUSE_SIDE_LENGTH = 2
+DEFAULT_MIN_HOUSE_SIDE_LENGTH = 2
 """Min length of a side of the house (in meters)."""
 
-MAX_BOUNDARY_CUT_AREA = 6
+DEFAULT_MAX_BOUNDARY_CUT_AREA = 6
 """Max area of a single chop along the boundary."""
 
 
@@ -21,7 +22,11 @@ def get_n_cuts(num_rooms: int) -> int:
 
 
 def sample_interior_boundary(
-    num_rooms: int, dims: Optional[Tuple[int, int]] = None
+    num_rooms: int,
+    average_room_size: int = DEFAULT_AVERAGE_ROOM_SIZE,
+    min_house_side_length: int = DEFAULT_MIN_HOUSE_SIDE_LENGTH,
+    max_boundary_cut_area: int = DEFAULT_MAX_BOUNDARY_CUT_AREA,
+    dims: Optional[Tuple[int, int]] = None,
 ) -> np.array:
     """Sample a boundary for the interior of a house.
 
@@ -31,16 +36,16 @@ def sample_interior_boundary(
     """
     assert num_rooms > 0
 
-    # NOTE: -1 * AVERAGE_ROOM_SIZE and +1 * AVERAGE_ROOM_SIZE adds in some
+    # NOTE: -1 * average_room_size and +1 * average_room_size adds in some
     # variance. The +1 makes high is inclusive.
     if dims is None:
         x_size, z_size = np.random.randint(
             low=max(
-                MIN_HOUSE_SIDE_LENGTH,
-                np.sqrt(num_rooms) * AVERAGE_ROOM_SIZE - 1 * AVERAGE_ROOM_SIZE // 2,
+                min_house_side_length,
+                np.sqrt(num_rooms) * average_room_size - 1 * average_room_size // 2,
             ),
             high=(
-                np.sqrt(num_rooms) * AVERAGE_ROOM_SIZE + 1 * AVERAGE_ROOM_SIZE // 2 + 1
+                np.sqrt(num_rooms) * average_room_size + 1 * average_room_size // 2 + 1
             ),
             size=2,
         )
@@ -56,12 +61,12 @@ def sample_interior_boundary(
 
     for chop_side in chop_sides:
         x_cut = np.random.randint(
-            low=1, high=max(2, min(x_size - 1, MAX_BOUNDARY_CUT_AREA // 2))
+            low=1, high=max(2, min(x_size - 1, max_boundary_cut_area // 2))
         )
         z_cut_candidates = []
 
         i = 1
-        while x_cut * i <= MAX_BOUNDARY_CUT_AREA and i + 1 <= z_size:
+        while x_cut * i <= max_boundary_cut_area and i + 1 <= z_size:
             z_cut_candidates.append(i)
             i += 1
 

@@ -38,7 +38,7 @@ class RoomSpec:
         spec: List[Union[LeafRoom, MetaRoom]],
         used_ids: Set[int],
         start_at: int = 2,
-    ) -> None:
+    ) -> Set[int]:
         """Assign a room_id to each MetaRoom in the RoomSpec."""
         used_ids = used_ids.copy()
         for room in spec:

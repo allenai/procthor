@@ -15,14 +15,6 @@ opening doesn't cause the size of the object to expand in the x/z direction.)
 SCHEMA = "0.0.1"
 """The schema version of the json file to create the house."""
 
-PRIORITY_ASSET_TYPES = {
-    "Bedroom": ["Bed", "Dresser"],
-    "LivingRoom": ["Television", "DiningTable", "Sofa"],
-    "Kitchen": ["CounterTop", "Fridge"],
-    "Bathroom": ["Toilet", "Sink"],
-}
-"""These objects should be placed first inside of the rooms."""
-
 MARGIN = {
     "middle": 0.35,
     "edge": {"front": 0.5, "back": 0, "sides": 0},

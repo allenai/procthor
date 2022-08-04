@@ -1,13 +1,11 @@
 import random
 from typing import TYPE_CHECKING
 
-from procthor.databases import material_database, solid_wall_colors
+from procthor.databases import ProcTHORDatabase
 
 if TYPE_CHECKING:
     from . import PartialHouse
 
-FLOOR_MATERIALS = material_database["Wood"]
-WALL_MATERIALS = material_database["Wall"]
 
 P_ALL_WALLS_SAME = 0.35
 """Probability that all wall materials are the same."""
@@ -19,28 +17,36 @@ P_SAMPLE_SOLID_WALL_COLOR = 0.5
 """Probability of sampling a solid wall color instead of a material."""
 
 
-def randomize_wall_and_floor_materials(partial_house: "PartialHouse") -> None:
+def randomize_wall_and_floor_materials(
+    partial_house: "PartialHouse",
+    pt_db: ProcTHORDatabase,
+) -> None:
     """Randomize the materials on each wall and floor."""
-    randomize_wall_materials(partial_house)
-    randomize_floor_materials(partial_house)
+    randomize_wall_materials(partial_house, pt_db=pt_db)
+    randomize_floor_materials(partial_house, pt_db=pt_db)
 
 
-def sample_wall_params():
+def sample_wall_params(
+    pt_db: ProcTHORDatabase,
+):
     if random.random() < P_SAMPLE_SOLID_WALL_COLOR:
         return {
-            "color": random.choice(solid_wall_colors),
+            "color": random.choice(pt_db.SOLID_WALL_COLORS),
             "material": "PureWhite",
         }
     return {
-        "material": random.choice(WALL_MATERIALS),
+        "material": random.choice(pt_db.MATERIAL_DATABASE["Wall"]),
     }
 
 
-def randomize_wall_materials(partial_house: "PartialHouse") -> None:
+def randomize_wall_materials(
+    partial_house: "PartialHouse",
+    pt_db: ProcTHORDatabase,
+) -> None:
     """Randomize the materials on each wall."""
     # NOTE: randomize all the walls to the same material.
     if random.random() < P_ALL_WALLS_SAME:
-        wall_params = sample_wall_params()
+        wall_params = sample_wall_params(pt_db=pt_db)
         for wall in partial_house.walls:
             for k, v in wall_params.items():
                 wall[k] = v
@@ -60,7 +66,7 @@ def randomize_wall_materials(partial_house: "PartialHouse") -> None:
 
     wall_params_per_room = dict()
     for room_id in room_ids:
-        wall_params_per_room[room_id] = sample_wall_params()
+        wall_params_per_room[room_id] = sample_wall_params(pt_db=pt_db)
 
     for wall in partial_house.walls:
         for k, v in wall_params_per_room[wall["roomId"]].items():
@@ -76,13 +82,16 @@ def randomize_wall_materials(partial_house: "PartialHouse") -> None:
         ]["color"]
 
 
-def randomize_floor_materials(partial_house: "PartialHouse") -> None:
+def randomize_floor_materials(
+    partial_house: "PartialHouse",
+    pt_db: ProcTHORDatabase,
+) -> None:
     """Randomize the materials on each floor."""
     if random.random() < P_ALL_FLOOR_SAME:
-        floor_material = random.choice(FLOOR_MATERIALS)
+        floor_material = random.choice(pt_db.MATERIAL_DATABASE["Wood"])
         for room in partial_house.room_types:
             room["floorMaterial"] = floor_material
         return
 
     for room in partial_house.room_types:
-        room["floorMaterial"] = random.choice(material_database["Wood"])
+        room["floorMaterial"] = random.choice(pt_db.MATERIAL_DATABASE["Wood"])

@@ -23,7 +23,7 @@ from PIL import Image
 import numpy as np
 
 from houses.constants import PROCTHOR_INITIALIZATION
-from houses.databases import asset_database, material_database, placement_annotations
+from houses.databases import ASSET_DATABASE, MATERIAL_DATABASE, PLACEMENT_ANNOTATIONS
 
 
 #%% Material Database
@@ -33,12 +33,12 @@ def reset_material_database():
     update_material_visualizations()
 
 
-def save_material_database(material_database):
-    for materials in material_database.values():
+def save_material_database(MATERIAL_DATABASE):
+    for materials in MATERIAL_DATABASE.values():
         materials.sort()
 
     with open(MATERIAL_DATABASE_PATH, "w") as f:
-        f.write(json.dumps(material_database, indent=4, sort_keys=True))
+        f.write(json.dumps(MATERIAL_DATABASE, indent=4, sort_keys=True))
 
 
 def update_material_database(controller: Controller) -> None:
@@ -49,7 +49,7 @@ def update_material_database(controller: Controller) -> None:
 
 def update_material_visualizations():
     controller = Controller(branch="nanna-cmb", scene="Procedural")
-    for material_group, materials in material_database.items():
+    for material_group, materials in MATERIAL_DATABASE.items():
         print(material_group)
         for material in materials:
             print("|", end="")
@@ -93,7 +93,7 @@ def save_asset_database(asset_database_by_type: dict):
 
 def create_splits() -> None:
     overrides = 0
-    for asset_type, assets in asset_database.items():
+    for asset_type, assets in ASSET_DATABASE.items():
         assets.sort(key=lambda asset: asset["assetId"])
         random.seed(42)
         if len(assets) < 6:
@@ -133,7 +133,7 @@ def create_splits() -> None:
                     overrides += 1
 
     assert overrides == 4
-    save_asset_database(asset_database)
+    save_asset_database(ASSET_DATABASE)
 
 
 def update_asset_database_by_type(controller: Controller) -> None:
@@ -184,9 +184,9 @@ def update_asset_database_by_type(controller: Controller) -> None:
 def update_bounding_box():
     controller = Controller(**PROCTHOR_INITIALIZATION)
     for obj_type in ["Bed", "TennisRacket"]:
-        for i in range(len(asset_database[obj_type])):
+        for i in range(len(ASSET_DATABASE[obj_type])):
             controller.step(action="DestroyHouse")
-            asset = asset_database[obj_type][i]
+            asset = ASSET_DATABASE[obj_type][i]
             controller.step(
                 action="SpawnAsset",
                 assetId=asset["assetId"],
@@ -198,8 +198,8 @@ def update_bounding_box():
                 if obj["objectId"] == asset["assetId"]
             )
             bb = asset["axisAlignedBoundingBox"]["size"]
-            asset_database[obj_type][i]["boundingBox"] = bb
-    save_asset_database(asset_database)
+            ASSET_DATABASE[obj_type][i]["boundingBox"] = bb
+    save_asset_database(ASSET_DATABASE)
 
 
 def set_materials_per_asset_id():
@@ -208,11 +208,11 @@ def set_materials_per_asset_id():
 
     material_id_to_group = {
         material: material_group
-        for material_group, materials in material_database.items()
+        for material_group, materials in MATERIAL_DATABASE.items()
         for material in materials
     }
 
-    for asset_group, assets in asset_database.items():
+    for asset_group, assets in ASSET_DATABASE.items():
         print(asset_group, end=": ")
         for asset in assets:
             print("|", end="")
@@ -231,7 +231,7 @@ def set_materials_per_asset_id():
             controller.step(action="DisableObject", objectId="asset_0")
         print()
 
-    save_asset_database(asset_database)
+    save_asset_database(ASSET_DATABASE)
 
 
 def set_scenes_per_asset(controller: Controller):
@@ -251,11 +251,11 @@ def set_scenes_per_asset(controller: Controller):
         for asset_id in asset_ids:
             asset_id_to_scenes[asset_id].append(scene)
 
-    for assets in asset_database.values():
+    for assets in ASSET_DATABASE.values():
         for asset in assets:
             asset["scenes"] = asset_id_to_scenes[asset["assetId"]]
 
-    save_asset_database(asset_database)
+    save_asset_database(ASSET_DATABASE)
 
 
 def update_asset_images(
@@ -274,18 +274,18 @@ def update_asset_images(
         **PROCTHOR_INITIALIZATION,
     )
     i_obj = 0
-    total_objects = sum([len(objs) for objs in asset_database.values()])
+    total_objects = sum([len(objs) for objs in ASSET_DATABASE.values()])
 
     LARGE_DISTANCE = 20
     base_dir = "images/orthographic"
-    for asset_type in sorted(asset_database.keys()):
+    for asset_type in sorted(ASSET_DATABASE.keys()):
         if asset_types is not None and asset_type not in asset_types:
             continue
         print(asset_type, end=": ")
         folder = f"{base_dir}/{asset_type}"
         os.makedirs(folder, exist_ok=True)
 
-        for asset in asset_database[asset_type]:
+        for asset in ASSET_DATABASE[asset_type]:
             asset_id = asset["assetId"]
             if asset_ids is not None and asset_id not in asset_ids:
                 continue
@@ -380,7 +380,7 @@ def update_asset_images(
 
 
 def add_max_image_pixel_length():
-    for asset_type, assets in asset_database.items():
+    for asset_type, assets in ASSET_DATABASE.items():
         print(asset_type)
         sides = ["back", "bottom", "front", "left", "right", "top"]
         max_asset_type_lengths = dict()
@@ -407,7 +407,7 @@ def add_max_image_pixel_length():
                 print(f"Zero length with assetId {asset_id}!")
             asset["maxImagePixelLength"] = max_length / ASSET_IMAGE_SIZE
             max_asset_type_lengths[asset_id] = max_length / ASSET_IMAGE_SIZE
-    save_asset_database(asset_database)
+    save_asset_database(ASSET_DATABASE)
 
 
 def set_object_states(controller):
@@ -424,13 +424,13 @@ def set_object_states(controller):
 
     controller.reset(scene="Procedural")
 
-    for asset_group, assets in asset_database.items():
+    for asset_group, assets in ASSET_DATABASE.items():
         for i in range(len((assets))):
-            asset_database[asset_group][i]["states"] = dict()
+            ASSET_DATABASE[asset_group][i]["states"] = dict()
 
-    for object_type in asset_database:
+    for object_type in ASSET_DATABASE:
         print(object_type)
-        for i, asset in enumerate(asset_database[object_type]):
+        for i, asset in enumerate(ASSET_DATABASE[object_type]):
             if "CanOpen" not in asset["secondaryProperties"]:
                 continue
 
@@ -459,13 +459,13 @@ def set_object_states(controller):
 
             bbox_size = {k: bbox["max"][k] - bbox["min"][k] for k in ["x", "y", "z"]}
             assert any(bbox_size[k] > 1e-3 for k in ["x", "y", "z"])
-            asset_database[object_type][i]["states"]["open"] = dict(
+            ASSET_DATABASE[object_type][i]["states"]["open"] = dict(
                 boundingBox=bbox_size
             )
 
         print()
 
-    save_asset_database(asset_database)
+    save_asset_database(ASSET_DATABASE)
 
 
 if __name__ == "__main__":
@@ -502,22 +502,22 @@ def save_ai2thor_object_metadata():
 
 #%%
 def assign_object_groups():
-    placeable_object_types = placement_annotations[
+    placeable_object_types = PLACEMENT_ANNOTATIONS[
         (
-            (placement_annotations["isPickupable"] == False)
-            & (placement_annotations["onWall"] == False)
+            (PLACEMENT_ANNOTATIONS["isPickupable"] == False)
+            & (PLACEMENT_ANNOTATIONS["onWall"] == False)
         )
         | (
             (
-                (placement_annotations["isPickupable"] == True)
-                | (placement_annotations["onWall"] == True)
+                (PLACEMENT_ANNOTATIONS["isPickupable"] == True)
+                | (PLACEMENT_ANNOTATIONS["onWall"] == True)
             )
-            & (placement_annotations["onFloor"] == True)
+            & (PLACEMENT_ANNOTATIONS["onFloor"] == True)
         )
     ]
 
     object_groups = {
-        obj_type: [asset["assetId"] for asset in asset_database[obj_type]]
+        obj_type: [asset["assetId"] for asset in ASSET_DATABASE[obj_type]]
         for obj_type in placeable_object_types.index
     }
     with open("houses/databases/object-groups.json", "w") as f:
@@ -528,14 +528,14 @@ import json
 from collections import Counter, defaultdict
 
 #%%
-from houses.databases import ai2thor_object_metadata, placement_annotations
+from houses.databases import AI2THOR_OBJECT_METADATA, PLACEMENT_ANNOTATIONS
 
 
 def save_receptacles():
-    used_asset_types = set(placement_annotations.index)
+    used_asset_types = set(PLACEMENT_ANNOTATIONS.index)
 
     receptacle_types = set()
-    for room_type, scenes in ai2thor_object_metadata.items():
+    for room_type, scenes in AI2THOR_OBJECT_METADATA.items():
         for objects in scenes:
             for obj in objects:
                 if obj["parentReceptacles"]:
@@ -549,7 +549,7 @@ def save_receptacles():
                             receptacle_types.add(parent_type)
 
     receptacle_counts = defaultdict(Counter)
-    for room_type, scenes in ai2thor_object_metadata.items():
+    for room_type, scenes in AI2THOR_OBJECT_METADATA.items():
         for objects in scenes:
             for obj in objects:
                 if obj["objectType"] in receptacle_types:
@@ -602,12 +602,12 @@ def set_wall_holes():
     from ai2thor.controller import Controller
 
     from houses.constants import PROCTHOR_INITIALIZATION
-    from houses.databases import asset_database
+    from houses.databases import ASSET_DATABASE
 
     controller = Controller(**PROCTHOR_INITIALIZATION)
 
-    window_ids = [obj["assetId"] for obj in asset_database["Window"]]
-    door_ids = [obj["assetId"] for obj in asset_database["Doorway"]]
+    window_ids = [obj["assetId"] for obj in ASSET_DATABASE["Window"]]
+    door_ids = [obj["assetId"] for obj in ASSET_DATABASE["Doorway"]]
 
     hole_ids = window_ids + door_ids
     out = dict()

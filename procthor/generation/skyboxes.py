@@ -1,13 +1,20 @@
 import random
 
-from procthor.databases import skyboxes
+from ai2thor.controller import Controller
+
+from procthor.databases import ProcTHORDatabase
 from procthor.generation import PartialHouse
-from procthor.utils.types import RGB, Skybox, Vector3
+from procthor.utils.types import RGB, Skybox, Vector3, Split
 
 
-def add_skybox(partial_house: PartialHouse) -> None:
+def default_add_skybox(
+    partial_house: PartialHouse,
+    controller: Controller,
+    pt_db: ProcTHORDatabase,
+    split: Split,
+) -> None:
     """Add a skybox to the scene."""
-    skybox: Skybox = random.choice(list(skyboxes.values()))
+    skybox: Skybox = random.choice(list(pt_db.SKYBOXES.values()))
     time_of_day = skybox["timeOfDay"]
 
     partial_house.procedural_parameters["skyboxId"] = skybox["name"]

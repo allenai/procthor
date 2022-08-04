@@ -2,6 +2,8 @@ from collections import defaultdict
 from typing import Dict, Literal, Optional, Sequence, Set
 
 import numpy as np
+from shapely.geometry import Polygon
+
 from procthor.constants import FLOOR_Y, OUTDOOR_ROOM_ID
 from procthor.utils.types import (
     BoundaryGroups,
@@ -11,12 +13,10 @@ from procthor.utils.types import (
     Wall,
     XZPoly,
 )
-from shapely.geometry import Polygon
-
 from .ceiling_height import sample_ceiling_height
 from .floorplan_generation import generate_floorplan
 from .house import HouseStructure, PartialHouse
-from .interior_boundaries import sample_interior_boundary
+from .interior_boundaries import sample_interior_boundary, DEFAULT_AVERAGE_ROOM_SIZE
 from .room_specs import RoomSpec
 
 
@@ -182,15 +182,17 @@ def get_xz_poly_map(boundary_groups, room_ids: Set[int]) -> Dict[int, XZPoly]:
     return out
 
 
-def sample_house_structure(
+def default_sample_house_structure(
     interior_boundary: Optional[np.ndarray],
     room_ids: Set,
     room_spec: "RoomSpec",
     interior_boundary_scale: float,
+    average_room_size: int = DEFAULT_AVERAGE_ROOM_SIZE,
 ) -> HouseStructure:
     if interior_boundary is None:
         interior_boundary = sample_interior_boundary(
             num_rooms=len(room_ids),
+            average_room_size=average_room_size,
             dims=None if room_spec.dims is None else room_spec.dims(),
         )
     floorplan = generate_floorplan(

@@ -1,13 +1,18 @@
 from typing import Dict
 
+from ai2thor.controller import Controller
 from shapely.geometry import Polygon
 
+from procthor.databases import ProcTHORDatabase
 from procthor.generation import PartialHouse
-from procthor.utils.types import RGB, Light, LightShadow, Vector3
+from procthor.utils.types import RGB, Light, LightShadow, Vector3, Split
 
 
-def add_lights(
+def default_add_lights(
     partial_house: PartialHouse,
+    controller: Controller,
+    pt_db: ProcTHORDatabase,
+    split: Split,
     floor_polygons: Dict[str, Polygon],
     ceiling_height: float,
 ) -> None:

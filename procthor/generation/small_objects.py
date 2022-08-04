@@ -12,17 +12,12 @@ from typing import Dict, List
 
 import numpy as np
 from ai2thor.controller import Controller
-from procthor.databases import (
-    asset_id_database,
-    assets_df,
-    objects_in_receptacles,
-    placement_annotations,
-)
 
 from procthor.constants import FLOOR_Y, OPENNESS_RANDOMIZATIONS
 from procthor.utils.types import Object, Split, Vector3
 from . import PartialHouse
 from .objects import ProceduralRoom, sample_openness
+from ..databases import ProcTHORDatabase
 
 PARENT_BIAS = defaultdict(
     lambda: 0.2, {"Chair": 0, "ArmChair": 0, "Countertop": 0.2, "ShelvingUnit": 0.4}
@@ -70,11 +65,13 @@ Helps avoid the baseball bat from always standing upright.
 """
 
 
-def add_small_objects(
+def default_add_small_objects(
     partial_house: PartialHouse,
-    rooms: Dict[int, ProceduralRoom],
-    split: Split,
     controller: Controller,
+    pt_db: ProcTHORDatabase,
+    split: Split,
+    rooms: Dict[int, ProceduralRoom],
+    max_object_types_per_room: int = 10000,
 ) -> None:
     """Add small objects to the house."""
     controller.reset()
@@ -101,7 +98,9 @@ def add_small_objects(
         objects_per_room[room_id].append(obj)
     objects_per_room = dict(objects_per_room)
     receptacles_per_room = {
-        room_id: [obj for obj in objects if obj["objectType"] in objects_in_receptacles]
+        room_id: [
+            obj for obj in objects if obj["objectType"] in pt_db.OBJECTS_IN_RECEPTACLES
+        ]
         for room_id, objects in objects_per_room.items()
     }
     object_types_in_rooms = {
@@ -115,7 +114,7 @@ def add_small_objects(
     logging.debug(f"Small object bias: {house_bias}")
 
     # NOTE: Place the objects
-    placed_objects = 0
+    num_placed_object_instances = 0
     for room_id, room in rooms.items():
         if room_id not in receptacles_per_room:
             continue
@@ -123,9 +122,13 @@ def add_small_objects(
         room_type = room.room_type
         spawnable_objects = []
         for receptacle in receptacles_in_room:
-            objects_in_receptacle = objects_in_receptacles[receptacle["objectType"]]
+            objects_in_receptacle = pt_db.OBJECTS_IN_RECEPTACLES[
+                receptacle["objectType"]
+            ]
             for object_type, data in objects_in_receptacle.items():
-                room_weight = placement_annotations.loc[object_type][f"in{room_type}s"]
+                room_weight = pt_db.PLACEMENT_ANNOTATIONS.loc[object_type][
+                    f"in{room_type}s"
+                ]
                 if room_weight == 0:
                     continue
                 spawnable_objects.append(
@@ -150,7 +153,11 @@ def add_small_objects(
             )
         ]
         random.shuffle(filtered_spawnable_groups)
+        objects_types_placed_in_room = set()
         for group in filtered_spawnable_groups:
+            if len(objects_types_placed_in_room) >= max_object_types_per_room:
+                break
+
             # NOTE: Supports things like 3 plates on a surface.
             num_of_type = 1
             # NOTE: intentionally has no bias on > 1 samples.
@@ -163,15 +170,15 @@ def add_small_objects(
                 # NOTE: Check if there can be multiple of the same type in the room.
                 if (
                     group["childObjectType"] in object_types_in_rooms[room_id]
-                    and not placement_annotations.loc[group["childObjectType"]][
+                    and not pt_db.PLACEMENT_ANNOTATIONS.loc[group["childObjectType"]][
                         "multiplePerRoom"
                     ]
                 ):
                     break
 
-                asset_candidates = assets_df[
-                    (assets_df["objectType"] == group["childObjectType"])
-                    & assets_df["split"].isin([split, None])
+                asset_candidates = pt_db.ASSETS_DF[
+                    (pt_db.ASSETS_DF["objectType"] == group["childObjectType"])
+                    & pt_db.ASSETS_DF["split"].isin([split, None])
                 ]
 
                 if group["childObjectType"] == "HousePlant":
@@ -194,7 +201,7 @@ def add_small_objects(
 
                 chosen_asset_id = asset_candidates.sample()["assetId"].iloc[0]
 
-                generated_object_id = f"small|{room_id}|{placed_objects}"
+                generated_object_id = f"small|{room_id}|{num_placed_object_instances}"
 
                 # NOTE: spawn below the floor so it doesn't tip over any other objects.
                 event = controller.step(
@@ -211,12 +218,12 @@ def add_small_objects(
                     action="SetObjectFilter", objectIds=[generated_object_id]
                 )
 
-                obj_type = asset_id_database[chosen_asset_id]["objectType"]
+                obj_type = pt_db.ASSET_ID_DATABASE[chosen_asset_id]["objectType"]
                 openness = None
                 if (
                     obj_type in OPENNESS_RANDOMIZATIONS
                     and "CanOpen"
-                    in asset_id_database[chosen_asset_id]["secondaryProperties"]
+                    in pt_db.ASSET_ID_DATABASE[chosen_asset_id]["secondaryProperties"]
                 ):
                     openness = sample_openness(obj_type)
                     controller.step(
@@ -273,15 +280,16 @@ def add_small_objects(
                             rotation=obj["rotation"],
                             position=center_position,
                             kinematic=bool(
-                                placement_annotations.loc[group["childObjectType"]][
-                                    "isKinematic"
-                                ]
+                                pt_db.PLACEMENT_ANNOTATIONS.loc[
+                                    group["childObjectType"]
+                                ]["isKinematic"]
                             ),
                             **states,
                         )
                     )
 
-                    placed_objects += 1
+                    num_placed_object_instances += 1
+                    objects_types_placed_in_room.add(obj_type)
                     object_types_in_rooms[room_id].add(group["childObjectType"])
                 else:
                     controller.step(
@@ -293,13 +301,12 @@ def add_small_objects(
     # NOTE: Drop object from near ceiling so it falls
     def _set_drop_heights(objects: List[Object], obj_types):
         for obj in objects:
-            obj_type = asset_id_database[obj["assetId"]]["objectType"]
+            obj_type = pt_db.ASSET_ID_DATABASE[obj["assetId"]]["objectType"]
             if obj_type in obj_types and random.random() < obj_types[obj_type]["p"]:
                 obj["position"]["y"] = 3
                 obj["rotation"]["x"] = random.random() * 2 + 3
                 obj["rotation"]["y"] = random.random() * 360
                 changed_ids.add(obj["id"])
-                logging.debug("Spawning BaseballBat")
             if "children" in obj:
                 _set_drop_heights(obj["children"], obj_types=OBJECTS_TO_DROP)
 
