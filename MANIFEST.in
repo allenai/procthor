@@ -1,2 +1,2 @@
-include houses/databases/*.json
-include houses/databases/asset_groups/*.json
+include procthor/databases/*.json
+include procthor/databases/asset_groups/*.json

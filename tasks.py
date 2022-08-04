@@ -1,15 +1,14 @@
 from invoke import task
 
-
-ASSET_DATABASE_PATH = "houses/databases/asset-database.json"
-MATERIAL_DATABASE_PATH = "houses/databases/material-database.json"
+ASSET_DATABASE_PATH = "procthor/databases/asset-database.json"
+MATERIAL_DATABASE_PATH = "procthor/databases/material-database.json"
 ASSET_IMAGE_SIZE = 450
 
 #%% Utils
 @task
 def set_version(c, version):
     """Writes the version upon a release."""
-    for filename in ["setup.py", "houses/__init__.py"]:
+    for filename in ["setup.py", "procthor/__init__.py"]:
         with open(filename, "r") as f:
             file = f.read()
         file = file.replace("<REPLACE_WITH_VERSION>", version)
@@ -496,7 +495,7 @@ def save_ai2thor_object_metadata():
             object_meta.append(event.metadata["objects"])
         out[scene_group] = object_meta
 
-    with open("houses/databases/ai2thor-object-metadata.json", "w") as f:
+    with open("procthor/databases/ai2thor-object-metadata.json", "w") as f:
         f.write(json.dumps(out, indent=4, sort_keys=True))
 
 
@@ -520,7 +519,7 @@ def assign_object_groups():
         obj_type: [asset["assetId"] for asset in asset_database[obj_type]]
         for obj_type in placeable_object_types.index
     }
-    with open("houses/databases/object-groups.json", "w") as f:
+    with open("procthor/databases/object-groups.json", "w") as f:
         f.write(json.dumps(object_groups, indent=4, sort_keys=True))
 
 
@@ -589,7 +588,7 @@ def save_receptacles():
             }
     out = dict(out)
 
-    with open("houses/databases/receptacles.json", "w") as f:
+    with open("procthor/databases/receptacles.json", "w") as f:
         f.write(json.dumps(out, indent=2, sort_keys=True))
 
 
@@ -615,6 +614,6 @@ def set_wall_holes():
         event = controller.step(action="GetAssetHoleMetadata", assetId=hole_id)
         out[hole_id] = event.metadata["actionReturn"]
 
-    with open("houses/databases/wall-holes.json", "w") as f:
+    with open("procthor/databases/wall-holes.json", "w") as f:
         f.write(json.dumps(out, indent=4, sort_keys=True))
 '''
