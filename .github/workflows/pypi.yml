@@ -1,4 +1,4 @@
-name: Houses
+name: PyPi Upload
 
 on:
   release:
