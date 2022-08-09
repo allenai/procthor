@@ -1,7 +1,7 @@
 import random
 from typing import List, TYPE_CHECKING
 
-from procthor.databases import asset_id_database
+from procthor.databases import ProcTHORDatabase
 
 if TYPE_CHECKING:
     pass
@@ -13,12 +13,14 @@ P_RANDOMIZE_COLORS = 0.7
 """Only randomize the colors of the object with p probability."""
 
 
-def randomize_object_colors(objects: List[Object]) -> None:
+def default_randomize_object_colors(
+    objects: List[Object], pt_db: ProcTHORDatabase
+) -> None:
     def _randomize_object_color(objects: List[Object]):
         """Recursively randomize the color of every object and child object."""
         for obj in objects:
             if (
-                asset_id_database[obj["assetId"]]["objectType"]
+                pt_db.ASSET_ID_DATABASE[obj["assetId"]]["objectType"]
                 in OBJECT_TYPES_TO_COLOR_RANDOMIZE
                 and random.random() < P_RANDOMIZE_COLORS
             ):

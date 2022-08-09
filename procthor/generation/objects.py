@@ -1,7 +1,6 @@
 import copy
 import random
 from collections import defaultdict
-from functools import lru_cache
 from statistics import mean
 from typing import (
     Any,
@@ -17,19 +16,11 @@ from typing import (
     TYPE_CHECKING,
 )
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from ai2thor.controller import Controller
 from attr import field
 from attrs import define
-from procthor.databases import (
-    asset_database,
-    asset_groups,
-    asset_id_database,
-    get_spawnable_asset_group_info,
-    placement_annotations,
-)
 from shapely.geometry import LineString, MultiPolygon, Point, Polygon
 
 from procthor.constants import (
@@ -42,7 +33,10 @@ from procthor.constants import (
     P_LARGEST_RECTANGLE,
     P_W1_ASSET_SKIPPED,
     PADDING_AGAINST_WALL,
-    PRIORITY_ASSET_TYPES,
+)
+from procthor.databases import (
+    get_spawnable_asset_group_info,
+    ProcTHORDatabase,
 )
 from procthor.utils.types import Object, Split, Vector3
 
@@ -79,6 +73,7 @@ class ChosenAssetGroup(TypedDict):
     rotated: bool
     objects: Any
     bounds: Any
+    allowDuplicates: bool
 
 
 def is_chosen_asset_group(data: dict) -> bool:
@@ -122,6 +117,8 @@ class Asset:
 
     states: Dict[str, Any]
 
+    pt_db: ProcTHORDatabase
+
     poly_xs: List[float] = field(init=False)
     poly_zs: List[float] = field(init=False)
 
@@ -143,8 +140,8 @@ class Asset:
             rotation=Vector3(x=0, y=self.rotation, z=0),
             assetId=self.asset_id,
             kinematic=bool(
-                placement_annotations.loc[
-                    asset_id_database[self.asset_id]["objectType"]
+                self.pt_db.PLACEMENT_ANNOTATIONS.loc[
+                    self.pt_db.ASSET_ID_DATABASE[self.asset_id]["objectType"]
                 ]["isKinematic"]
             ),
             **self.states,
@@ -180,6 +177,8 @@ class AssetGroup:
     object_n: int
     """The number of assets/asset groups in the scene before placing this asset."""
 
+    pt_db: ProcTHORDatabase
+
     poly_xs: List[float] = field(init=False)
     poly_zs: List[float] = field(init=False)
 
@@ -196,7 +195,9 @@ class AssetGroup:
     @property
     def assets_dict(self) -> List[Object]:
         # NOTE: Assign "above" objects to be children to parent receptacle
-        asset_group_metadata = asset_groups[self.asset_group_name]["assetMetadata"]
+        asset_group_metadata = self.pt_db.ASSET_GROUPS[self.asset_group_name][
+            "assetMetadata"
+        ]
         parent_children_pairs = []
         for child_id, metadata in asset_group_metadata.items():
             if (
@@ -213,8 +214,8 @@ class AssetGroup:
                 rotation=Vector3(x=0, y=obj["rotation"], z=0),
                 assetId=obj["assetId"],
                 kinematic=bool(
-                    placement_annotations.loc[
-                        asset_id_database[obj["assetId"]]["objectType"]
+                    self.pt_db.PLACEMENT_ANNOTATIONS.loc[
+                        self.pt_db.ASSET_ID_DATABASE[obj["assetId"]]["objectType"]
                     ]["isKinematic"]
                 ),
             )
@@ -282,14 +283,14 @@ class OrthogonalPolygon:
 
     def get_neighboring_rectangles(self) -> Set[Tuple[float, float, float, float]]:
         out = set()
-        self.area = 0
+        area = 0
         for x0, x1 in zip(self.unique_xs, self.unique_xs[1:]):
             for z0, z1 in zip(self.unique_zs, self.unique_zs[1:]):
                 mid_x = (x0 + x1) / 2
                 mid_z = (z0 + z1) / 2
                 if self.is_point_inside((mid_x, mid_z)):
                     out.add((x0, z0, x1, z1))
-                    self.area += (x1 - x0) * (z1 - z0)
+                    area += (x1 - x0) * (z1 - z0)
         return out
 
     def _join_neighboring_rectangles(
@@ -299,10 +300,10 @@ class OrthogonalPolygon:
         out = set()
         for rect1 in rects.copy():
             x0_0, z0_0, x1_0, z1_0 = rect1
-            points1 = set([(x0_0, z0_0), (x0_0, z1_0), (x1_0, z1_0), (x1_0, z0_0)])
-            for rect2 in rects - set([rect1]):
+            points1 = {(x0_0, z0_0), (x0_0, z1_0), (x1_0, z1_0), (x1_0, z0_0)}
+            for rect2 in rects - {rect1}:
                 x0_1, z0_1, x1_1, z1_1 = rect2
-                points2 = set([(x0_1, z0_1), (x0_1, z1_1), (x1_1, z1_1), (x1_1, z0_1)])
+                points2 = {(x0_1, z0_1), (x0_1, z1_1), (x1_1, z1_1), (x1_1, z0_1)}
                 if len(points1 & points2) == 2:
                     out.add(
                         (
@@ -330,7 +331,7 @@ class OrthogonalPolygon:
             if x > point[0]:
                 break
             for y0, y1 in self.x_edges_map[x]:
-                if point[1] > y0 and point[1] < y1:
+                if y0 < point[1] < y1:
                     edge_cross_count += 1
                     break
         return edge_cross_count
@@ -512,7 +513,7 @@ class ProceduralRoom:
         room_id: int,
         split: Split,
         door_polygons: List[Polygon],
-        controller: Controller,
+        pt_db: ProcTHORDatabase,
     ) -> None:
         """
 
@@ -531,21 +532,10 @@ class ProceduralRoom:
 
         self.room_type = room_type
         self.room_id = room_id
-        self.floor_types, self.spawnable_assets = ProceduralRoom.get_floor_assets(
-            room_type=room_type, split=split
-        )
-        self.priority_asset_types = list(PRIORITY_ASSET_TYPES[room_type])
-        random.shuffle(self.priority_asset_types)
-
-        spawnable_asset_group_info = get_spawnable_asset_group_info(
-            split=split, controller=controller
-        )
-        self.spawnable_asset_groups = spawnable_asset_group_info[
-            spawnable_asset_group_info[f"in{room_type}s"] > 0
-        ]
 
         self.split = split
 
+        self.pt_db = pt_db
         self.assets: List[Union[Asset, AssetGroup]] = []
         self.last_rectangles: Optional[Set[Tuple[float, float, float, float]]] = None
 
@@ -606,32 +596,6 @@ class ProceduralRoom:
         if not weights:
             return None
         return random.choices(population=population, weights=weights, k=1)[0]
-
-    @staticmethod
-    @lru_cache()
-    def get_floor_assets(room_type: str, split: str) -> pd.DataFrame:
-        floor_types = placement_annotations[
-            placement_annotations["onFloor"]
-            & (placement_annotations[f"in{room_type}s"] > 0)
-        ]
-        assets = pd.DataFrame(
-            [
-                {
-                    "assetId": asset["assetId"],
-                    "assetType": asset["objectType"],
-                    "split": asset["split"],
-                    "xSize": asset["boundingBox"]["x"],
-                    "ySize": asset["boundingBox"]["y"],
-                    "zSize": asset["boundingBox"]["z"],
-                }
-                for asset_type in floor_types.index
-                for asset in asset_database[asset_type]
-            ]
-        )
-        assets = pd.merge(assets, floor_types, on="assetType", how="left")
-        assets = assets[assets["split"].isin([split, None])]
-        assets.set_index("assetId", inplace=True)
-        return floor_types, assets
 
     def sample_place_asset_in_rectangle(
         self,
@@ -743,6 +707,7 @@ class ProceduralRoom:
                     anchor_type=anchor_type,
                     room_id=self.room_id,
                     object_n=len(self.assets),
+                    pt_db=self.pt_db,
                 )
             )
         else:
@@ -750,11 +715,11 @@ class ProceduralRoom:
 
             # NOTE: Don't randomize the openness in any of the asset groups.
             # NOTE: assumes opening the object doesn't change its top-down bbox.
-            obj_type = asset_id_database[asset["assetId"]]["objectType"]
+            obj_type = self.pt_db.ASSET_ID_DATABASE[asset["assetId"]]["objectType"]
             if (
                 obj_type in OPENNESS_RANDOMIZATIONS
                 and "CanOpen"
-                in asset_id_database[asset["assetId"]]["secondaryProperties"]
+                in self.pt_db.ASSET_ID_DATABASE[asset["assetId"]]["secondaryProperties"]
             ):
                 states["openness"] = sample_openness(obj_type)
 
@@ -773,13 +738,14 @@ class ProceduralRoom:
                     room_id=self.room_id,
                     object_n=len(self.assets),
                     states=states,
+                    pt_db=self.pt_db,
                 )
             )
 
     @staticmethod
     def sample_rotation(
         asset: Dict[str, Any], rect_x_length: float, rect_z_length: float
-    ) -> None:
+    ) -> bool:
         valid_rotated = []
         if asset["xSize"] < rect_x_length and asset["zSize"] < rect_z_length:
             valid_rotated.append(False)
@@ -787,7 +753,7 @@ class ProceduralRoom:
             valid_rotated.append(True)
         return random.choice(valid_rotated)
 
-    def _place_asset_group(
+    def place_asset_group(
         self,
         asset_group: pd.DataFrame,
         set_rotated: Optional[bool],
@@ -821,32 +787,6 @@ class ProceduralRoom:
                         rect_z_length=rect_z_length,
                     )
 
-                # NOTE: checks to remove asset group from spawnable asset groups
-                if not asset_group["allowDuplicates"].iloc[0]:
-                    self.spawnable_asset_groups = self.spawnable_asset_groups.drop(
-                        asset_group.index[0]
-                    )
-
-                # NOTE: check within each object
-                for obj in object_placement["objects"]:
-                    # NOTE: Update priority asset types
-                    if obj["assetType"] in self.priority_asset_types:
-                        self.priority_asset_types.remove(obj["assetType"])
-
-                    allow_duplicates_of_asset_type = placement_annotations.loc[
-                        obj["assetType"]
-                    ]["multiplePerRoom"]
-                    if not allow_duplicates_of_asset_type:
-                        # NOTE: Remove all asset groups that have the type
-                        self.spawnable_asset_groups = self.spawnable_asset_groups[
-                            ~self.spawnable_asset_groups[f"has{obj['assetType']}"]
-                        ]
-
-                        # NOTE: Remove all standalone assets that have the type
-                        self.spawnable_assets = self.spawnable_assets[
-                            self.spawnable_assets["assetType"] != obj["assetType"]
-                        ]
-
                 return ChosenAssetGroup(
                     assetGroupName=asset_group["assetGroupName"].iloc[0],
                     xSize=object_placement["bounds"]["x"]["length"],
@@ -855,9 +795,10 @@ class ProceduralRoom:
                     rotated=set_rotated,
                     objects=object_placement["objects"],
                     bounds=object_placement["bounds"],
+                    allowDuplicates=asset_group["allowDuplicates"].iloc[0],
                 )
 
-    def _place_asset(
+    def place_asset(
         self,
         asset: pd.DataFrame,
         set_rotated: Optional[bool],
@@ -875,201 +816,7 @@ class ProceduralRoom:
             )
         asset["rotated"] = set_rotated
 
-        # NOTE: remove instances of same type from spawnable assets if there
-        # cannot be multiple of the same type in the same room.
-        multiple_of_type_per_room = placement_annotations.loc[asset["assetType"]][
-            "multiplePerRoom"
-        ]
-        if not multiple_of_type_per_room:
-            # NOTE: update standalone asset candidates
-            self.spawnable_assets = self.spawnable_assets[
-                self.spawnable_assets["assetType"] != asset["assetType"]
-            ]
-            # NOTE: update asset group candidates
-            self.spawnable_asset_groups = self.spawnable_asset_groups[
-                ~self.spawnable_asset_groups[f"has{asset['assetType']}"]
-            ]
-
-        # NOTE: update priority asset types
-        if asset["assetType"] in self.priority_asset_types:
-            self.priority_asset_types.remove(asset["assetType"])
-
         return ChosenAsset(**asset)
-
-    def sample_asset(
-        self,
-        rectangle: Tuple[float, float, float, float],
-        anchor_type: str,
-        anchor_delta: int,
-        allow_house_plant_group: bool,
-        allow_tv_group: bool,
-    ) -> Optional[Union[ChosenAsset, ChosenAssetGroup]]:
-        """Chooses an asset to place in the room.
-
-        Args:
-            rect_size: The size of the outer rectangle that the object must
-                fit inside of.
-            anchor_type: The anchor type, in :code:`{"inCorner", "inMiddle", "onEdge"}`.
-
-        Returns:
-            The chosen asset or asset group. The rotated flag is set to
-            :code:`True` if the x and z sides should be flipped.
-
-        """
-        set_rotated = None
-
-        # NOTE: Choose the valid rotations
-        x0, z0, x1, z1 = rectangle
-        rect_x_length = x1 - x0
-        rect_z_length = z1 - z0
-
-        # NOTE: add margin to each object.
-        # NOTE: z is the forward direction on each object.
-        # Therefore, we only add space in front of the object.
-        if anchor_type == "onEdge":
-            x_margin = 2 * MARGIN["edge"]["sides"]
-            z_margin = (
-                MARGIN["edge"]["front"] + MARGIN["edge"]["back"] + PADDING_AGAINST_WALL
-            )
-        elif anchor_type == "inCorner":
-            x_margin = 2 * MARGIN["corner"]["sides"] + PADDING_AGAINST_WALL
-            z_margin = (
-                MARGIN["corner"]["front"]
-                + MARGIN["corner"]["back"]
-                + PADDING_AGAINST_WALL
-            )
-        elif anchor_type == "inMiddle":
-            # NOTE: add space to both sides
-            x_margin = 2 * MARGIN["middle"]
-            z_margin = 2 * MARGIN["middle"]
-
-        # NOTE: define the size filters
-        if anchor_delta in {1, 7}:
-            # NOTE: should not be rotated
-            size_filter = lambda assets_df: (
-                (assets_df["xSize"] + x_margin < rect_x_length)
-                & (assets_df["zSize"] + z_margin < rect_z_length)
-            )
-            set_rotated = False
-        elif anchor_delta in {3, 5}:
-            # NOTE: must be rotated
-            size_filter = lambda assets_df: (
-                (assets_df["zSize"] + z_margin < rect_x_length)
-                & (assets_df["xSize"] + x_margin < rect_z_length)
-            )
-            set_rotated = True
-        else:
-            # NOTE: either rotated or not rotated works
-            size_filter = lambda assets_df: (
-                (
-                    (assets_df["xSize"] + x_margin < rect_x_length)
-                    & (assets_df["zSize"] + z_margin < rect_z_length)
-                )
-                | (
-                    (assets_df["zSize"] + z_margin < rect_x_length)
-                    & (assets_df["xSize"] + x_margin < rect_z_length)
-                )
-            )
-
-        # NOTE: make sure anchor types and sizes fit
-        asset_group_candidates = self.spawnable_asset_groups[
-            self.spawnable_asset_groups[anchor_type]
-            & size_filter(self.spawnable_asset_groups)
-        ]
-        if not allow_house_plant_group:
-            # NOTE: quick hack to avoid oversampling floor house plants.
-            asset_group_candidates = asset_group_candidates[
-                asset_group_candidates["assetGroupName"] != "floor-house-plant"
-            ]
-        if not allow_tv_group:
-            # NOTE: quick hack to avoid oversampling tv.
-            asset_group_candidates = asset_group_candidates[
-                asset_group_candidates["assetGroupName"] != "television"
-            ]
-
-        asset_candidates = self.spawnable_assets[
-            self.spawnable_assets[anchor_type] & size_filter(self.spawnable_assets)
-        ]
-
-        # NOTE: try using a priority asset type if one needs to be placed
-        if self.priority_asset_types:
-            for asset_type in self.priority_asset_types:
-                # NOTE: see if there are any semantic asset groups with the asset
-                asset_groups_with_type = asset_group_candidates[
-                    asset_group_candidates[f"has{asset_type}"]
-                ]
-
-                # NOTE: see if assets can spawn by themselves
-                can_spawn_standalone = (
-                    placement_annotations[placement_annotations.index == asset_type][
-                        f"in{self.room_type}s"
-                    ].iloc[0]
-                    > 0
-                )
-                assets_with_type = None
-                if can_spawn_standalone:
-                    assets_with_type = asset_candidates[
-                        asset_candidates["assetType"] == asset_type
-                    ]
-
-                # NOTE: try using an asset group first
-                if len(asset_groups_with_type) and (
-                    assets_with_type is None or random.random() <= P_CHOOSE_ASSET_GROUP
-                ):
-                    # NOTE: Try using an asset group
-                    asset_group = asset_groups_with_type.sample()
-                    chosen_asset_group = self._place_asset_group(
-                        asset_group=asset_group,
-                        set_rotated=set_rotated,
-                        rect_x_length=rect_x_length,
-                        rect_z_length=rect_z_length,
-                    )
-                    if chosen_asset_group is not None:
-                        return chosen_asset_group
-
-                # NOTE: try using a standalone asset
-                if assets_with_type is not None and len(assets_with_type):
-                    # NOTE: try spawning in standalone
-                    asset = assets_with_type.sample()
-                    return self._place_asset(
-                        asset=asset,
-                        set_rotated=set_rotated,
-                        rect_x_length=rect_x_length,
-                        rect_z_length=rect_z_length,
-                    )
-
-        # NOTE: try using an asset group
-        if len(asset_group_candidates) and random.random() <= P_CHOOSE_ASSET_GROUP:
-            # NOTE: use an asset group if you can
-            asset_group = asset_group_candidates.sample()
-            chosen_asset_group = self._place_asset_group(
-                asset_group=asset_group,
-                set_rotated=set_rotated,
-                rect_x_length=rect_x_length,
-                rect_z_length=rect_z_length,
-            )
-            if chosen_asset_group is not None:
-                return chosen_asset_group
-
-        # NOTE: Skip weight 1 assets with a probability of P_W1_ASSET_SKIPPED
-        if random.random() <= P_W1_ASSET_SKIPPED:
-            asset_candidates = asset_candidates[
-                asset_candidates[f"in{self.room_type}s"] != 1
-            ]
-
-        # NOTE: no assets fit the anchor_type and size criteria
-        if not len(asset_candidates):
-            return None
-
-        # NOTE: this is a sampling by asset type
-        asset_type = random.choice(asset_candidates["assetType"].unique())
-        asset = asset_candidates[asset_candidates["assetType"] == asset_type].sample()
-        return self._place_asset(
-            asset=asset,
-            set_rotated=set_rotated,
-            rect_x_length=rect_x_length,
-            rect_z_length=rect_z_length,
-        )
 
     def sample_anchor_location(
         self,
@@ -1156,10 +903,14 @@ class ProceduralRoom:
         return (None, None, 4, "inMiddle")
 
     def save_viz(self, path) -> None:
+        import matplotlib.pyplot as plt
+
         self.visualize()
         plt.savefig(path, bbox_inches="tight")
 
-    def visualize(self) -> plt.Axes:
+    def visualize(self) -> "plt.Axes":
+        import matplotlib.pyplot as plt
+
         poly = self.room_polygon.polygon.exterior.coords
         xs = [p[0] for p in poly]
         zs = [p[1] for p in poly]
@@ -1226,17 +977,195 @@ class ProceduralRoom:
         return plt.gca()
 
     def __repr__(self) -> str:
-        self.visualize()
+        # self.visualize()
         return ""
 
 
-def add_rooms(
+def sample_and_add_floor_asset(
+    room: ProceduralRoom,
+    rectangle: Tuple[float, float, float, float],
+    anchor_type: str,
+    anchor_delta: int,
+    allow_house_plant_group: bool,
+    allow_tv_group: bool,
+    spawnable_assets: pd.DataFrame,
+    spawnable_asset_groups: pd.DataFrame,
+    priority_asset_types: List[str],
+    pt_db: ProcTHORDatabase,
+) -> Optional[Union[ChosenAsset, ChosenAssetGroup]]:
+    """Chooses an asset to place in the room.
+
+    Args:
+        rectangle: The size of the outer rectangle that the object must
+            fit inside of.
+        anchor_type: The anchor type, in :code:`{"inCorner", "inMiddle", "onEdge"}`.
+
+    Returns:
+        The chosen asset or asset group. The rotated flag is set to
+        :code:`True` if the x and z sides should be flipped.
+
+    """
+    set_rotated = None
+
+    # NOTE: Choose the valid rotations
+    x0, z0, x1, z1 = rectangle
+    rect_x_length = x1 - x0
+    rect_z_length = z1 - z0
+
+    # NOTE: add margin to each object.
+    # NOTE: z is the forward direction on each object.
+    # Therefore, we only add space in front of the object.
+    if anchor_type == "onEdge":
+        x_margin = 2 * MARGIN["edge"]["sides"]
+        z_margin = (
+            MARGIN["edge"]["front"] + MARGIN["edge"]["back"] + PADDING_AGAINST_WALL
+        )
+    elif anchor_type == "inCorner":
+        x_margin = 2 * MARGIN["corner"]["sides"] + PADDING_AGAINST_WALL
+        z_margin = (
+            MARGIN["corner"]["front"] + MARGIN["corner"]["back"] + PADDING_AGAINST_WALL
+        )
+    elif anchor_type == "inMiddle":
+        # NOTE: add space to both sides
+        x_margin = 2 * MARGIN["middle"]
+        z_margin = 2 * MARGIN["middle"]
+
+    # NOTE: define the size filters
+    if anchor_delta in {1, 7}:
+        # NOTE: should not be rotated
+        size_filter = lambda assets_df: (
+            (assets_df["xSize"] + x_margin < rect_x_length)
+            & (assets_df["zSize"] + z_margin < rect_z_length)
+        )
+        set_rotated = False
+    elif anchor_delta in {3, 5}:
+        # NOTE: must be rotated
+        size_filter = lambda assets_df: (
+            (assets_df["zSize"] + z_margin < rect_x_length)
+            & (assets_df["xSize"] + x_margin < rect_z_length)
+        )
+        set_rotated = True
+    else:
+        # NOTE: either rotated or not rotated works
+        size_filter = lambda assets_df: (
+            (
+                (assets_df["xSize"] + x_margin < rect_x_length)
+                & (assets_df["zSize"] + z_margin < rect_z_length)
+            )
+            | (
+                (assets_df["zSize"] + z_margin < rect_x_length)
+                & (assets_df["xSize"] + x_margin < rect_z_length)
+            )
+        )
+
+    # NOTE: make sure anchor types and sizes fit
+    asset_group_candidates = spawnable_asset_groups[
+        spawnable_asset_groups[anchor_type] & size_filter(spawnable_asset_groups)
+    ]
+    if not allow_house_plant_group:
+        # NOTE: quick hack to avoid oversampling floor house plants.
+        asset_group_candidates = asset_group_candidates[
+            asset_group_candidates["assetGroupName"] != "floor-house-plant"
+        ]
+    if not allow_tv_group:
+        # NOTE: quick hack to avoid oversampling tv.
+        asset_group_candidates = asset_group_candidates[
+            asset_group_candidates["assetGroupName"] != "television"
+        ]
+
+    asset_candidates = spawnable_assets[
+        spawnable_assets[anchor_type] & size_filter(spawnable_assets)
+    ]
+
+    # NOTE: try using a priority asset type if one needs to be placed
+    if priority_asset_types:
+        for asset_type in priority_asset_types:
+            # NOTE: see if there are any semantic asset groups with the asset
+            asset_groups_with_type = asset_group_candidates[
+                asset_group_candidates[f"has{asset_type}"]
+            ]
+
+            # NOTE: see if assets can spawn by themselves
+            can_spawn_standalone = (
+                pt_db.PLACEMENT_ANNOTATIONS[
+                    pt_db.PLACEMENT_ANNOTATIONS.index == asset_type
+                ][f"in{room.room_type}s"].iloc[0]
+                > 0
+            )
+            assets_with_type = None
+            if can_spawn_standalone:
+                assets_with_type = asset_candidates[
+                    asset_candidates["assetType"] == asset_type
+                ]
+
+            # NOTE: try using an asset group first
+            if len(asset_groups_with_type) and (
+                assets_with_type is None or random.random() <= P_CHOOSE_ASSET_GROUP
+            ):
+                # NOTE: Try using an asset group
+                asset_group = asset_groups_with_type.sample()
+                chosen_asset_group = room.place_asset_group(
+                    asset_group=asset_group,
+                    set_rotated=set_rotated,
+                    rect_x_length=rect_x_length,
+                    rect_z_length=rect_z_length,
+                )
+                if chosen_asset_group is not None:
+                    return chosen_asset_group
+
+            # NOTE: try using a standalone asset
+            if assets_with_type is not None and len(assets_with_type):
+                # NOTE: try spawning in standalone
+                asset = assets_with_type.sample()
+                return room.place_asset(
+                    asset=asset,
+                    set_rotated=set_rotated,
+                    rect_x_length=rect_x_length,
+                    rect_z_length=rect_z_length,
+                )
+
+    # NOTE: try using an asset group
+    if len(asset_group_candidates) and random.random() <= P_CHOOSE_ASSET_GROUP:
+        # NOTE: use an asset group if you can
+        asset_group = asset_group_candidates.sample()
+        chosen_asset_group = room.place_asset_group(
+            asset_group=asset_group,
+            set_rotated=set_rotated,
+            rect_x_length=rect_x_length,
+            rect_z_length=rect_z_length,
+        )
+        if chosen_asset_group is not None:
+            return chosen_asset_group
+
+    # NOTE: Skip weight 1 assets with a probability of P_W1_ASSET_SKIPPED
+    if random.random() <= P_W1_ASSET_SKIPPED:
+        asset_candidates = asset_candidates[
+            asset_candidates[f"in{room.room_type}s"] != 1
+        ]
+
+    # NOTE: no assets fit the anchor_type and size criteria
+    if not len(asset_candidates):
+        return None
+
+    # NOTE: this is a sampling by asset type
+    asset_type = random.choice(asset_candidates["assetType"].unique())
+    asset = asset_candidates[asset_candidates["assetType"] == asset_type].sample()
+    return room.place_asset(
+        asset=asset,
+        set_rotated=set_rotated,
+        rect_x_length=rect_x_length,
+        rect_z_length=rect_z_length,
+    )
+
+
+def default_add_rooms(
     partial_house: "PartialHouse",
+    controller: Controller,
+    pt_db: ProcTHORDatabase,
+    split: str,
     floor_polygons: Dict[str, Polygon],
     room_type_map: Dict[int, str],
-    split: str,
     door_polygons: Dict[int, List[Polygon]],
-    controller: Controller,
 ) -> None:
     """Add rooms
 
@@ -1256,17 +1185,22 @@ def add_rooms(
             room_id=room_id,
             split=split,
             door_polygons=door_polygons[room_id],
-            controller=controller,
+            pt_db=pt_db,
         )
         rooms[room_id] = room
 
     partial_house.rooms = rooms
 
 
-def add_floor_objects(
+def default_add_floor_objects(
     partial_house: "PartialHouse",
+    controller: Controller,
+    pt_db: ProcTHORDatabase,
+    split: Split,
     max_floor_objects: int,
-) -> List[Object]:
+    p_allow_house_plant_group: float = P_ALLOW_HOUSE_PLANT_GROUP,
+    p_allow_tv_group: float = P_ALLOW_TV_GROUP,
+) -> None:
     """Add objects to each room.
 
     Args:
@@ -1278,10 +1212,23 @@ def add_floor_objects(
 
     partial_house.objects = []
     for room in partial_house.rooms.values():
+        allow_house_plant_group = random.random() < p_allow_house_plant_group
+        allow_tv_group = random.random() < p_allow_tv_group
+
+        floor_types, spawnable_assets = pt_db.FLOOR_ASSET_DICT[
+            (room.room_type, room.split)
+        ]
+        priority_asset_types = copy.deepcopy(pt_db.PRIORITY_ASSET_TYPES[room.room_type])
+        random.shuffle(priority_asset_types)
+
+        spawnable_asset_group_info = get_spawnable_asset_group_info(
+            split=room.split, controller=controller, pt_db=pt_db
+        )
+        spawnable_asset_groups = spawnable_asset_group_info[
+            spawnable_asset_group_info[f"in{room.room_type}s"] > 0
+        ]
 
         asset = None
-        allow_house_plant_group = random.random() < P_ALLOW_HOUSE_PLANT_GROUP
-        allow_tv_group = random.random() < P_ALLOW_TV_GROUP
         for i in range(max_floor_objects):
             cache_rectangles = i != 0 and asset is None
             if cache_rectangles:
@@ -1297,12 +1244,17 @@ def add_floor_objects(
             x_info, z_info, anchor_delta, anchor_type = room.sample_anchor_location(
                 rectangle
             )
-            asset = room.sample_asset(
+            asset = sample_and_add_floor_asset(
+                room=room,
                 rectangle=rectangle,
                 anchor_type=anchor_type,
                 anchor_delta=anchor_delta,
                 allow_house_plant_group=allow_house_plant_group,
                 allow_tv_group=allow_tv_group,
+                spawnable_assets=spawnable_assets,
+                spawnable_asset_groups=spawnable_asset_groups,
+                priority_asset_types=priority_asset_types,
+                pt_db=pt_db,
             )
             # NOTE: no asset within the asset group could be placed inside of the
             # rectangle.
@@ -1317,6 +1269,36 @@ def add_floor_objects(
                 z_info=z_info,
                 anchor_delta=anchor_delta,
             )
+            added_asset_types = []
+            if "assetType" in asset:
+                added_asset_types.append(asset["assetType"])
+            else:
+                added_asset_types.extend([o["assetType"] for o in asset["objects"]])
+
+                if not asset["allowDuplicates"]:
+                    spawnable_asset_groups = spawnable_asset_groups.query(
+                        f"assetGroupName!='{asset['assetGroupName']}'"
+                    )
+
+            for asset_type in added_asset_types:
+                # Remove spawned object types from `priority_asset_types` when appropriate
+                if asset_type in priority_asset_types:
+                    priority_asset_types.remove(asset_type)
+
+                allow_duplicates_of_asset_type = pt_db.PLACEMENT_ANNOTATIONS.loc[
+                    asset_type
+                ]["multiplePerRoom"]
+
+                if not allow_duplicates_of_asset_type:
+                    # NOTE: Remove all asset groups that have the type
+                    spawnable_asset_groups = spawnable_asset_groups[
+                        ~spawnable_asset_groups[f"has{asset_type}"]
+                    ]
+
+                    # NOTE: Remove all standalone assets that have the type
+                    spawnable_assets = spawnable_assets[
+                        spawnable_assets["assetType"] != asset_type
+                    ]
 
         # NOTE: add the formatted assets
         for asset in room.assets:

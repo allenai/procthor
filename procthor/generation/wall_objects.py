@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd
-from procthor.databases import asset_database, asset_id_database, wall_holes
+from ai2thor.controller import Controller
 from shapely.geometry import LineString, MultiLineString, Polygon
 
 from procthor.constants import OUTDOOR_ROOM_ID
@@ -21,6 +21,7 @@ from procthor.utils.types import (
 )
 from . import PartialHouse
 from .objects import AssetGroup, ProceduralRoom
+from ..databases import ProcTHORDatabase
 
 MAX_CENTER_Y_HEIGHT = 3
 """Clips the height of the wall.
@@ -56,7 +57,11 @@ def add_padding_to_poly(
     return [(min_x, min_z), (min_x, max_z), (max_x, max_z), (max_x, min_z)]
 
 
-def get_assets_df(split: Split, asset_type: str) -> pd.DataFrame:
+def get_assets_df(
+    split: Split,
+    asset_type: str,
+    pt_db: ProcTHORDatabase,
+) -> pd.DataFrame:
     """Return the available paintings to spawn into the scene."""
     return pd.DataFrame(
         [
@@ -66,7 +71,7 @@ def get_assets_df(split: Split, asset_type: str) -> pd.DataFrame:
                 "ySize": asset["boundingBox"]["y"],
                 "zSize": asset["boundingBox"]["z"],
             }
-            for asset in asset_database[asset_type]
+            for asset in pt_db.ASSET_DATABASE[asset_type]
             if asset["split"] == split
         ]
     )
@@ -185,6 +190,7 @@ def extract_wall_ids(
 def subtract_wall_assets(
     room_to_wall_to_string: Dict[int, Dict[str, Union[LineString, MultiLineString]]],
     rooms: Dict[int, ProceduralRoom],
+    pt_db: ProcTHORDatabase,
     min_height: Optional[float] = None,
 ) -> List[Dict[str, Any]]:
     """Subtract assets on the edge of the room from the spawnable places for assets.
@@ -212,13 +218,13 @@ def subtract_wall_assets(
                 # NOTE: assumes assets or asset groups are placed on the floor.
                 asset_max_y = (
                     max(
-                        asset_id_database[obj["assetId"]]["boundingBox"]["y"] / 2
+                        pt_db.ASSET_ID_DATABASE[obj["assetId"]]["boundingBox"]["y"] / 2
                         + obj["position"]["y"]
                         for obj in asset.objects
                     )
                     if isinstance(asset, AssetGroup)
                     else (
-                        asset_id_database[asset.asset_id]["boundingBox"]["y"] / 2
+                        pt_db.ASSET_ID_DATABASE[asset.asset_id]["boundingBox"]["y"] / 2
                         + asset.position["y"]
                     )
                 )
@@ -323,6 +329,7 @@ def add_windows(
     room_type_map: Dict[int, str],
     wall_map: Dict[str, Wall],
     ceiling_height: float,
+    pt_db: ProcTHORDatabase,
 ) -> None:
     """Add windows to the house."""
     window_boundary_strings = get_boundary_strings(
@@ -332,7 +339,9 @@ def add_windows(
         room_type_map=room_type_map,
     )
     room_to_wall_to_string = extract_wall_ids(boundary_strings=window_boundary_strings)
-    subtract_wall_assets(room_to_wall_to_string=room_to_wall_to_string, rooms=rooms)
+    subtract_wall_assets(
+        room_to_wall_to_string=room_to_wall_to_string, rooms=rooms, pt_db=pt_db
+    )
     convert_multi_lines_to_single_lines(room_to_wall_to_string=room_to_wall_to_string)
     rooms_lines_df_map = get_line_string_df_map(
         room_to_wall_to_string=room_to_wall_to_string
@@ -351,7 +360,7 @@ def add_windows(
         ]
 
     # NOTE: Get the window assets
-    windows_df = get_assets_df(split=split, asset_type="Window")
+    windows_df = get_assets_df(split=split, asset_type="Window", pt_db=pt_db)
     min_window_size = windows_df["xSize"].min()
 
     # NOTE: Sample windows to place
@@ -412,7 +421,7 @@ def add_windows(
             ]
 
             asset_id = window["assetId"].iloc[0]
-            wall_hole = wall_holes[asset_id]
+            wall_hole = pt_db.WALL_HOLES[asset_id]
 
             offset = wall_hole["offset"]
 
@@ -475,6 +484,7 @@ def subtract_doors_and_windows(
     room_to_wall_to_string: Dict[int, Union[LineString, MultiLineString]],
     partial_house: PartialHouse,
     wall_map: Dict[str, Wall],
+    pt_db: ProcTHORDatabase,
 ) -> None:
     """Subtracts doors and walls from the wall line strings in room_to_wall_to_string."""
     # NOTE: Subtract empty walls that openly connect two rooms
@@ -491,7 +501,7 @@ def subtract_doors_and_windows(
         if obj["room1"] is not None:
             room_ids.append(int(obj["room1"][len("room|") :]))
 
-        obj_width = asset_id_database[obj["assetId"]]["boundingBox"]["x"]
+        obj_width = pt_db.ASSET_ID_DATABASE[obj["assetId"]]["boundingBox"]["x"]
         center_pos_along_wall = (
             obj["boundingBox"]["min"]["x"] + obj["boundingBox"]["max"]["x"]
         ) / 2
@@ -692,6 +702,7 @@ def setup_wall_placement(
     partial_house: PartialHouse,
     wall_map: Dict[str, Wall],
     rooms: Dict[int, ProceduralRoom],
+    pt_db: ProcTHORDatabase,
 ) -> Tuple[Any, Any]:
     painting_boundary_strings = get_boundary_strings(
         boundary_groups=boundary_groups,
@@ -707,11 +718,13 @@ def setup_wall_placement(
         room_to_wall_to_string=room_to_wall_to_string,
         partial_house=partial_house,
         wall_map=wall_map,
+        pt_db=pt_db,
     )
     wall_object_heights_per_room = subtract_wall_assets(
         room_to_wall_to_string=room_to_wall_to_string,
         rooms=rooms,
         min_height=NO_PAINTINGS_ABOVE_ASSETS_OF_HEIGHT,
+        pt_db=pt_db,
     )
 
     convert_multi_lines_to_single_lines(room_to_wall_to_string=room_to_wall_to_string)
@@ -731,9 +744,10 @@ def add_paintings(
     tvs_per_room,
     rooms_lines_df_map,
     wall_object_heights_per_room,
+    pt_db: ProcTHORDatabase,
 ) -> None:
     """Add paintings to the house."""
-    paintings_df = get_assets_df(split=split, asset_type="Painting")
+    paintings_df = get_assets_df(split=split, asset_type="Painting", pt_db=pt_db)
 
     max_paintings_in_rooms = random.choices(
         k=len(rooms_lines_df_map), **PAINTINGS_PER_ROOM
@@ -871,6 +885,7 @@ def add_televisions(
     room_type_map: Dict[int, str],
     wall_map: Dict[str, Wall],
     ceiling_height: float,
+    pt_db: ProcTHORDatabase,
 ):
     """Add paintings to the house."""
     rooms_lines_df_map, wall_object_heights_per_room = setup_wall_placement(
@@ -879,8 +894,9 @@ def add_televisions(
         partial_house=partial_house,
         wall_map=wall_map,
         rooms=rooms,
+        pt_db=pt_db,
     )
-    assets_df = get_assets_df(split=split, asset_type="Television")
+    assets_df = get_assets_df(split=split, asset_type="Television", pt_db=pt_db)
     assets_df = assets_df[assets_df["assetId"].isin(VALID_WALL_TELEVISIONS)]
     if len(assets_df) == 0:
         return rooms_lines_df_map, wall_object_heights_per_room
@@ -901,9 +917,12 @@ def add_televisions(
         for asset in rooms[room_id].assets:
             if isinstance(asset, AssetGroup):
                 for obj in asset.objects:
-                    if asset_id_database[obj["assetId"]]["objectType"] == "Television":
+                    if (
+                        pt_db.ASSET_ID_DATABASE[obj["assetId"]]["objectType"]
+                        == "Television"
+                    ):
                         room_has_television = True
-            elif asset_id_database[asset.asset_id]["objectType"] == "Television":
+            elif pt_db.ASSET_ID_DATABASE[asset.asset_id]["objectType"] == "Television":
                 room_has_television = True
             if room_has_television:
                 break
@@ -1005,11 +1024,13 @@ def add_televisions(
 
 
 #%% Add wall objects
-def add_wall_objects(
+def default_add_wall_objects(
     partial_house: PartialHouse,
+    controller: Controller,
+    pt_db: ProcTHORDatabase,
+    split: Split,
     rooms: Dict[int, ProceduralRoom],
     boundary_groups: BoundaryGroups,
-    split: Split,
     room_type_map: Dict[int, str],
     ceiling_height: float,
 ) -> None:
@@ -1023,6 +1044,7 @@ def add_wall_objects(
         room_type_map=room_type_map,
         wall_map=wall_map,
         ceiling_height=ceiling_height,
+        pt_db=pt_db,
     )
     tvs_per_room, rooms_lines_df_map, wall_object_heights_per_room = add_televisions(
         partial_house=partial_house,
@@ -1032,6 +1054,7 @@ def add_wall_objects(
         room_type_map=room_type_map,
         wall_map=wall_map,
         ceiling_height=ceiling_height,
+        pt_db=pt_db,
     )
 
     add_paintings(
@@ -1043,4 +1066,5 @@ def add_wall_objects(
         tvs_per_room=tvs_per_room,
         rooms_lines_df_map=rooms_lines_df_map,
         wall_object_heights_per_room=wall_object_heights_per_room,
+        pt_db=pt_db,
     )

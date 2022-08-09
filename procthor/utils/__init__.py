@@ -1,5 +1,6 @@
+from typing import Tuple, Union, Dict
+
 from ai2thor.controller import Controller
-from typing import Tuple
 
 
 class DebugController(Controller):
@@ -19,7 +20,9 @@ class DebugController(Controller):
 
 
 def is_equal(
-    point0: Tuple[int, int], point1: Tuple[int, int], threshold: float = 1e-2
+    point0: Union[int, float, Tuple[int, int], Dict[str, float]],
+    point1: Union[int, float, Tuple[int, int], Dict[str, float]],
+    threshold: float = 1e-2,
 ) -> bool:
     """Return True if all entries in point0 are within threshold of pairwise entries
     in point1.

@@ -2,6 +2,7 @@ import random
 from typing import Dict, List, Literal, Optional, Sequence, Tuple, TypedDict, Union
 
 from attrs import define
+
 from procthor.constants import OUTDOOR_ROOM_ID
 
 Split = Literal["train", "val", "test"]

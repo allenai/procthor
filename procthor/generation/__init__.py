@@ -6,34 +6,79 @@ from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 from ai2thor.controller import Controller
-from attr import Attribute, field
+from attr import Attribute, field, Factory
 from attrs import define
+
 from procthor.constants import PROCTHOR_INITIALIZATION
 from procthor.utils.types import InvalidFloorplan, SamplingVars, Split
-
 from .ceiling_height import sample_ceiling_height
-from .color_objects import randomize_object_colors
-from .doors import add_doors
-from .exterior_walls import add_exterior_walls
+from .color_objects import default_randomize_object_colors
+from .doors import default_add_doors
+from .exterior_walls import default_add_exterior_walls
 from .generation import (
     create_empty_partial_house,
     find_walls,
     get_floor_polygons,
     get_xz_poly_map,
-    sample_house_structure,
+    default_sample_house_structure,
     scale_boundary_groups,
 )
 from .house import House, HouseStructure, NextSamplingStage, PartialHouse
 from .interior_boundaries import sample_interior_boundary
 from .layer import assign_layer_to_rooms
-from .lights import add_lights
+from .lights import default_add_lights
 from .materials import randomize_wall_and_floor_materials
-from .object_states import randomize_object_states
-from .objects import add_floor_objects, add_rooms
+from .object_states import default_randomize_object_states
+from .objects import default_add_floor_objects, default_add_rooms
+from .protocols import (
+    AddSmallObjectsProtocol,
+    AddDoorsProtocol,
+    AddLightsProtocol,
+    AddSkyboxProtocol,
+    AddExteriorWallsProtocol,
+    AddRoomsProtocol,
+    AddFloorObjectsProtocol,
+    AddWallObjectsProtocol,
+    AddSmallObjectsProtocol,
+    SampleHouseStructureProtocol,
+    RandomizeObjectAttributesProtocol,
+)
 from .room_specs import PROCTHOR10K_ROOM_SPEC_SAMPLER, RoomSpec, RoomSpecSampler
-from .skyboxes import add_skybox
-from .small_objects import add_small_objects
-from .wall_objects import add_wall_objects
+from .skyboxes import default_add_skybox
+from .small_objects import default_add_small_objects
+from .wall_objects import default_add_wall_objects
+from ..databases import ProcTHORDatabase, DEFAULT_PROCTHOR_DATABASE
+
+
+@define
+class GenerationFunctions:
+    sample_house_structure: SampleHouseStructureProtocol
+    add_doors: AddDoorsProtocol
+    add_lights: AddLightsProtocol
+    add_skybox: AddSkyboxProtocol
+    add_exterior_walls: AddExteriorWallsProtocol
+    add_rooms: AddRoomsProtocol
+    add_floor_objects: AddFloorObjectsProtocol
+    add_wall_objects: AddWallObjectsProtocol
+    add_small_objects: AddSmallObjectsProtocol
+    randomize_object_colors: RandomizeObjectAttributesProtocol
+    randomize_object_states: RandomizeObjectAttributesProtocol
+
+
+def _create_default_generation_functions():
+    return GenerationFunctions(
+        sample_house_structure=default_sample_house_structure,
+        add_doors=default_add_doors,
+        add_lights=default_add_lights,
+        add_skybox=default_add_skybox,
+        add_exterior_walls=default_add_exterior_walls,
+        add_rooms=default_add_rooms,
+        add_floor_objects=default_add_floor_objects,
+        add_wall_objects=default_add_wall_objects,
+        add_small_objects=default_add_small_objects,
+        randomize_object_colors=default_randomize_object_colors,
+        randomize_object_states=default_randomize_object_states,
+    )
 
 
 @define
@@ -45,6 +90,10 @@ class HouseGenerator:
     interior_boundary: Optional[np.array] = None
     controller: Optional[Controller] = None
     partial_house: Optional[PartialHouse] = None
+    pt_db: ProcTHORDatabase = DEFAULT_PROCTHOR_DATABASE
+    generation_functions: GenerationFunctions = Factory(
+        _create_default_generation_functions
+    )
 
     @split.validator
     def _valid_split(self, attribute: Attribute, value: Split) -> None:
@@ -72,6 +121,7 @@ class HouseGenerator:
         self,
         partial_house: Optional[PartialHouse] = None,
         return_partial_houses: bool = False,
+        sampling_vars: Optional[SamplingVars] = None,
     ) -> Tuple[House, Dict[NextSamplingStage, PartialHouse]]:
         """Sample a house specification compatible with AI2-THOR."""
         if self.controller is None:
@@ -83,8 +133,11 @@ class HouseGenerator:
                 )
 
         sampling_stage_to_ph = {}
-        sampling_vars = SamplingVars.sample()
+        sampling_vars = (
+            SamplingVars.sample() if sampling_vars is None else sampling_vars
+        )
 
+        gfs = self.generation_functions
         if partial_house is None:
             # NOTE: grabbing existing values
             if self.partial_house is not None:
@@ -98,7 +151,7 @@ class HouseGenerator:
             room_ids = set(room_spec.room_type_map.keys())
             for _ in range(10):
                 try:
-                    house_structure = sample_house_structure(
+                    house_structure = gfs.sample_house_structure(
                         interior_boundary=interior_boundary,
                         room_ids=room_ids,
                         room_spec=room_spec,
@@ -139,11 +192,13 @@ class HouseGenerator:
         # NOTE: DOORS
         if partial_house.next_sampling_stage <= NextSamplingStage.DOORS:
             with advance_and_record_partial(partial_house):
-                door_polygons = add_doors(
+                door_polygons = gfs.add_doors(
                     partial_house=partial_house,
+                    controller=self.controller,
+                    pt_db=self.pt_db,
                     split=self.split,
                 )
-                randomize_wall_and_floor_materials(partial_house)
+                randomize_wall_and_floor_materials(partial_house, pt_db=self.pt_db)
 
         floor_polygons = get_floor_polygons(
             xz_poly_map=partial_house.house_structure.xz_poly_map
@@ -151,72 +206,90 @@ class HouseGenerator:
 
         if partial_house.next_sampling_stage <= NextSamplingStage.LIGHTS:
             with advance_and_record_partial(partial_house):
-                add_lights(
+                gfs.add_lights(
                     partial_house=partial_house,
+                    controller=self.controller,
+                    pt_db=self.pt_db,
+                    split=self.split,
                     floor_polygons=floor_polygons,
                     ceiling_height=partial_house.house_structure.ceiling_height,
                 )
 
         if partial_house.next_sampling_stage <= NextSamplingStage.SKYBOX:
             with advance_and_record_partial(partial_house):
-                add_skybox(partial_house=partial_house)
+                gfs.add_skybox(
+                    partial_house=partial_house,
+                    controller=self.controller,
+                    pt_db=self.pt_db,
+                    split=self.split,
+                )
 
         # NOTE: added after `randomize_wall_and_floor_materials` on purpose
         if partial_house.next_sampling_stage <= NextSamplingStage.EXTERIOR_WALLS:
             with advance_and_record_partial(partial_house):
-                add_exterior_walls(
+                gfs.add_exterior_walls(
                     partial_house=partial_house,
+                    controller=self.controller,
+                    pt_db=self.pt_db,
+                    split=self.split,
                     boundary_groups=partial_house.house_structure.boundary_groups,
                 )
 
         if partial_house.next_sampling_stage <= NextSamplingStage.ROOMS:
             with advance_and_record_partial(partial_house):
-                add_rooms(
+                gfs.add_rooms(
                     partial_house=partial_house,
+                    controller=self.controller,
+                    pt_db=self.pt_db,
+                    split=self.split,
                     floor_polygons=floor_polygons,
                     room_type_map=partial_house.room_spec.room_type_map,
-                    split=self.split,
                     door_polygons=door_polygons,
-                    controller=self.controller,
                 )
 
         if partial_house.next_sampling_stage <= NextSamplingStage.FLOOR_OBJS:
             with advance_and_record_partial(partial_house):
-                add_floor_objects(
+                gfs.add_floor_objects(
                     partial_house=partial_house,
+                    controller=self.controller,
+                    pt_db=self.pt_db,
+                    split=self.split,
                     max_floor_objects=sampling_vars.max_floor_objects,
                 )
                 floor_objects = [*partial_house.objects]
-                randomize_object_colors(objects=floor_objects)
-                randomize_object_states(objects=floor_objects)
+                gfs.randomize_object_colors(objects=floor_objects, pt_db=self.pt_db)
+                gfs.randomize_object_states(objects=floor_objects, pt_db=self.pt_db)
 
         if partial_house.next_sampling_stage <= NextSamplingStage.WALL_OBJS:
             with advance_and_record_partial(partial_house):
-                add_wall_objects(
+                gfs.add_wall_objects(
                     partial_house=partial_house,
+                    controller=self.controller,
+                    pt_db=self.pt_db,
+                    split=self.split,
                     rooms=partial_house.rooms,
                     boundary_groups=partial_house.house_structure.boundary_groups,
-                    split=self.split,
                     room_type_map=partial_house.room_spec.room_type_map,
                     ceiling_height=partial_house.house_structure.ceiling_height,
                 )
                 wall_objects = [*partial_house.objects[len(floor_objects) :]]
-                randomize_object_colors(objects=wall_objects)
-                randomize_object_states(objects=wall_objects)
+                gfs.randomize_object_colors(objects=wall_objects, pt_db=self.pt_db)
+                gfs.randomize_object_states(objects=wall_objects, pt_db=self.pt_db)
 
         if partial_house.next_sampling_stage <= NextSamplingStage.SMALL_OBJS:
             with advance_and_record_partial(partial_house):
-                add_small_objects(
+                gfs.add_small_objects(
                     partial_house=partial_house,
-                    rooms=partial_house.rooms,
-                    split=self.split,
                     controller=self.controller,
+                    pt_db=self.pt_db,
+                    split=self.split,
+                    rooms=partial_house.rooms,
                 )
                 small_objects = [
                     *partial_house.objects[len(floor_objects) + len(wall_objects) :]
                 ]
-                randomize_object_colors(objects=small_objects)
-                randomize_object_states(objects=small_objects)
+                gfs.randomize_object_colors(objects=small_objects, pt_db=self.pt_db)
+                gfs.randomize_object_states(objects=small_objects, pt_db=self.pt_db)
 
         assign_layer_to_rooms(partial_house=partial_house)
 

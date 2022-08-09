@@ -1,17 +1,21 @@
 import random
 from typing import TYPE_CHECKING
 
+from ai2thor.controller import Controller
+
 from procthor.constants import OUTDOOR_ROOM_ID
-from procthor.utils.types import BoundaryGroups, Wall
+from procthor.utils.types import BoundaryGroups, Wall, Split
+from ..databases import ProcTHORDatabase
 
 if TYPE_CHECKING:
     from . import PartialHouse
 
-from .materials import WALL_MATERIALS
 
-
-def add_exterior_walls(
+def default_add_exterior_walls(
     partial_house: "PartialHouse",
+    controller: Controller,
+    pt_db: ProcTHORDatabase,
+    split: Split,
     boundary_groups: BoundaryGroups,
 ) -> None:
     """Add walls to the outside of the house.
@@ -24,7 +28,7 @@ def add_exterior_walls(
     }
 
     # NOTE: Intentionally not using solid colors as they're often too bright.
-    material = random.choice(WALL_MATERIALS)
+    material = random.choice(pt_db.MATERIAL_DATABASE["Wall"])
 
     house_walls = {wall["id"]: wall for wall in partial_house.walls}
     for bg, walls in outdoor_boundary_groups.items():

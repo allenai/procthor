@@ -4,15 +4,15 @@ import logging
 import random
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Dict, List, Set, Tuple, Union, TYPE_CHECKING
+from typing import Dict, List, Set, Tuple, Union, TYPE_CHECKING, Any
 
 import pandas as pd
+from ai2thor.controller import Controller
 from attr import field
 from attrs import define
 from shapely.geometry import Polygon
 
 from procthor.constants import OUTDOOR_ROOM_ID
-from procthor.databases import asset_database, wall_holes
 from procthor.utils.types import (
     BoundaryGroups,
     BoundingBox,
@@ -23,6 +23,7 @@ from procthor.utils.types import (
     Vector3,
     Wall,
 )
+from ..databases import ProcTHORDatabase
 
 if TYPE_CHECKING:
     from . import PartialHouse
@@ -75,8 +76,10 @@ EPSILON = 1e-3
 """Small value to compare floats within a bound."""
 
 
-def add_doors(
+def default_add_doors(
     partial_house: "PartialHouse",
+    controller: Controller,
+    pt_db: ProcTHORDatabase,
     split: Split,
 ) -> Dict[int, List[Polygon]]:
     """Add doors to the house."""
@@ -112,6 +115,7 @@ def add_doors(
         closed_doors=set(outdoor_walls.keys()),
         room_spec=room_spec,
         boundary_groups=boundary_groups,
+        pt_db=pt_db,
     )
     return polygons_to_subtract
 
@@ -158,9 +162,7 @@ def flatten(x):
         input: [[{5}, {6}], [{555}, {667}], [{35}, {53}, {5, 6}, {555, 667}]]
         output: {5, 6, 35, 53, 555, 667}
     """
-    return (
-        set([a for i in x for a in flatten(i)]) if isinstance(x, Iterable) else set([x])
-    )
+    return set([a for i in x for a in flatten(i)]) if isinstance(x, Iterable) else {x}
 
 
 def get_room_spec_neighbors(
@@ -200,7 +202,7 @@ def get_room_spec_neighbors(
 
     """
     out = []
-    room_ids = [set([room.room_id]) for room in room_spec if isinstance(room, LeafRoom)]
+    room_ids = [{room.room_id} for room in room_spec if isinstance(room, LeafRoom)]
     for room in room_spec:
         if isinstance(room, MetaRoom):
             child_ids = get_room_spec_neighbors(room.children)
@@ -239,7 +241,7 @@ def randomly_prioritize_room_ids(
 
 def select_openings(
     neighboring_rooms: Set[Tuple[int, int]],
-    room_spec_neighbors: List[Set[int]],
+    room_spec_neighbors: List[Dict[int, Any]],
     room_spec: RoomSpec,
 ) -> List[Tuple[int, int]]:
     """Select which neighboring rooms should have doors between them.
@@ -352,6 +354,8 @@ class ProceduralFrame:
     door_id: str = field(init=False)
     """The generated objectId of the door."""
 
+    pt_db: ProcTHORDatabase
+
     def __attrs_post_init__(self) -> None:
         """Initialize the door id."""
         self.door_id = (
@@ -362,7 +366,7 @@ class ProceduralFrame:
     def flip(self) -> None:
         # NOTE: Doors connected to the outside should not flip due to limitations
         # in the AI2-THOR json.
-        if self.wall_1 != None:
+        if self.wall_1 is not None:
             self.wall_0, self.wall_1 = self.wall_1, self.wall_0
             self.room_0_id, self.room_1_id = self.room_1_id, self.room_0_id
 
@@ -513,9 +517,9 @@ class ProceduralFrame:
 
         # TODO: This is a quick hack. Wall holes only contain info for doorways
         # right now, but they # share the same asset offset.
-        asset_offset = wall_holes[self.asset_id.replace("Doorframe", "Doorway")][
-            "offset"
-        ]
+        asset_offset = self.pt_db.WALL_HOLES[
+            self.asset_id.replace("Doorframe", "Doorway")
+        ]["offset"]
 
         bbox_with_offset = copy.deepcopy(self.bounding_box)
         bbox_with_offset["min"]["x"] -= asset_offset["x"]
@@ -561,7 +565,7 @@ def fix_door_intersections(doors: List[ProceduralDoor]):
             logging.warning("Might be unable to walk between rooms!")
 
         tried_combinations = set()
-        next_door_flip_combinations = set([tuple(False for _ in doors)])
+        next_door_flip_combinations = {tuple(False for _ in doors)}
         door_id_to_idx = {door.door_id: i for i, door in enumerate(doors)}
 
         while next_door_flip_combinations:
@@ -653,6 +657,7 @@ def add_door_meta(
     closed_doors: Set[Tuple[int, int]],
     room_spec: RoomSpec,
     boundary_groups: BoundaryGroups,
+    pt_db: ProcTHORDatabase,
 ) -> Dict[int, List[Polygon]]:
     """Get the formatted metadata of the doors.
 
@@ -687,7 +692,7 @@ def add_door_meta(
                 "ySize": d["boundingBox"]["y"],
                 "zSize": d["boundingBox"]["z"],
             }
-            for d in asset_database["Doorway"]
+            for d in pt_db.ASSET_DATABASE["Doorway"]
             if d["split"] == split
         ]
     )
@@ -699,7 +704,7 @@ def add_door_meta(
                 "ySize": d["boundingBox"]["y"],
                 "zSize": d["boundingBox"]["z"],
             }
-            for d in asset_database["Doorframe"]
+            for d in pt_db.ASSET_DATABASE["Doorframe"]
             if d["split"] == split
         ]
     )
@@ -720,7 +725,7 @@ def add_door_meta(
         else:
             boundary = orig_boundary
 
-        # NOTE: set the default assets_df. It may be updated with frames_df.
+        # NOTE: set the default ASSETS_DF. It may be updated with frames_df.
         assets_df = doors_df
         use_frame = False
 
@@ -745,11 +750,11 @@ def add_door_meta(
                     logging.debug("Adding empty wall.")
                     walls = boundary_groups[orig_boundary]
                     wall_ids = set()
-                    for wall in walls:
-                        min_x = min(wall[0][0], wall[1][0])
-                        max_x = max(wall[0][0], wall[1][0])
-                        min_z = min(wall[0][1], wall[1][1])
-                        max_z = max(wall[0][1], wall[1][1])
+                    for other_wall in walls:
+                        min_x = min(other_wall[0][0], other_wall[1][0])
+                        max_x = max(other_wall[0][0], other_wall[1][0])
+                        min_z = min(other_wall[0][1], other_wall[1][1])
+                        max_z = max(other_wall[0][1], other_wall[1][1])
                         for room_id in boundary:
                             wall_ids.add(
                                 f"wall|{room_id}|{min_x:.2f}|{min_z:.2f}|{max_x:.2f}|{max_z:.2f}"
@@ -760,31 +765,31 @@ def add_door_meta(
                             wall_ids.remove(house_wall["id"])
                     assert not wall_ids
 
-                    for wall in walls:
-                        if wall[0][0] == wall[1][0]:
+                    for other_wall in walls:
+                        if other_wall[0][0] == other_wall[1][0]:
                             # NOTE: vertical wall
-                            x = wall[0][0]
+                            x = other_wall[0][0]
                             polygon = Polygon(
                                 [
-                                    [x - OPEN_ROOM_PADDING, wall[0][1]],
-                                    [x - OPEN_ROOM_PADDING, wall[1][1]],
-                                    [x + OPEN_ROOM_PADDING, wall[1][1]],
-                                    [x + OPEN_ROOM_PADDING, wall[0][1]],
+                                    [x - OPEN_ROOM_PADDING, other_wall[0][1]],
+                                    [x - OPEN_ROOM_PADDING, other_wall[1][1]],
+                                    [x + OPEN_ROOM_PADDING, other_wall[1][1]],
+                                    [x + OPEN_ROOM_PADDING, other_wall[0][1]],
                                 ]
                             )
-                        elif wall[0][1] == wall[1][1]:
+                        elif other_wall[0][1] == other_wall[1][1]:
                             # NOTE: horizontal wall
-                            z = wall[0][1]
+                            z = other_wall[0][1]
                             polygon = Polygon(
                                 [
-                                    [wall[0][0], z - OPEN_ROOM_PADDING],
-                                    [wall[1][0], z - OPEN_ROOM_PADDING],
-                                    [wall[1][0], z + OPEN_ROOM_PADDING],
-                                    [wall[0][0], z + OPEN_ROOM_PADDING],
+                                    [other_wall[0][0], z - OPEN_ROOM_PADDING],
+                                    [other_wall[1][0], z - OPEN_ROOM_PADDING],
+                                    [other_wall[1][0], z + OPEN_ROOM_PADDING],
+                                    [other_wall[0][0], z + OPEN_ROOM_PADDING],
                                 ]
                             )
                         else:
-                            raise ValueError(f"Invalid wall: {wall}")
+                            raise ValueError(f"Invalid wall: {other_wall}")
                         for room_id in boundary:
                             polygons_to_subtract[room_id].append(polygon)
 
@@ -852,6 +857,7 @@ def add_door_meta(
                 min_z_wall=min_z_wall,
                 max_z_wall=max_z_wall,
                 asset_id=door["assetId"].iloc[0],
+                pt_db=pt_db,
             )
         else:
             door = ProceduralDoor(
@@ -870,6 +876,7 @@ def add_door_meta(
                 max_z_wall=max_z_wall,
                 asset_id=door["assetId"].iloc[0],
                 is_open=orig_boundary not in closed_doors,
+                pt_db=pt_db,
             )
         doors.append(door)
 

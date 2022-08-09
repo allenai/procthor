@@ -21,7 +21,7 @@ def get_room_to_layer_map(partial_house: "PartialHouse"):
             wall_pos_id = wall_pos_id[wall_pos_id.find("|") + 1 :]
             open_wall_connections[wall_pos_id].add(room_id)
 
-    connection_pairs = [set([r1, r2]) for r1, r2 in open_wall_connections.values()]
+    connection_pairs = [{r1, r2} for r1, r2 in open_wall_connections.values()]
     connections = []
     while connection_pairs:
         connection = connection_pairs[0]
@@ -115,7 +115,7 @@ def assign_room_to_layer(partial_house: "PartialHouse", room_to_layer_map):
                 layer = room_id_map[room_id]
                 light["layer"] = f"Procedural{layer}"
                 light["cullingMaskOff"] = [
-                    f"Procedural{i}" for i in list(set(range(4)) - set([layer]))
+                    f"Procedural{i}" for i in list(set(range(4)) - {layer})
                 ]
                 break
         else:
@@ -160,9 +160,9 @@ def four_color_graph(graph: nx.Graph):
         sat.add_clause(node_to_vars[node])
 
         for i, j in itertools.combinations(node_to_vars[node], 2):
-            for j in node_to_vars[node]:
-                if i != j:
-                    sat.add_clause([-i, -j])
+            for l in node_to_vars[node]:
+                if i != l:
+                    sat.add_clause([-i, -l])
 
     for u, v in graph.edges:
         for i, j in zip(node_to_vars[u], node_to_vars[v]):

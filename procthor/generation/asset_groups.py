@@ -12,7 +12,7 @@ from attrs import define
 from trimesh import Trimesh
 from trimesh.collision import CollisionManager
 
-from procthor.databases import asset_id_database
+from procthor.databases import ProcTHORDatabase
 from procthor.utils.types import Split, Vector3
 
 
@@ -31,6 +31,8 @@ class AssetGroupGenerator:
     """Procedural AI2-THOR Controller."""
 
     cache: Dict[str, Any] = field(init=False)
+
+    pt_db: ProcTHORDatabase
 
     def __attrs_post_init__(self):
         """Preprocesses the asset group data to be in a better format.
@@ -51,7 +53,10 @@ class AssetGroupGenerator:
                 out = []
                 for asset_type, asset_ids in asset_metadata["assetIds"].items():
                     for asset_id in asset_ids:
-                        if asset_id_database[asset_id]["split"] in {None, self.split}:
+                        if self.pt_db.ASSET_ID_DATABASE[asset_id]["split"] in {
+                            None,
+                            self.split,
+                        }:
                             out.append((asset_type, asset_id))
                 if not out:
                     raise Exception(
@@ -97,11 +102,19 @@ class AssetGroupGenerator:
                 [
                     {
                         "assetId": asset_id,
-                        "assetType": asset_id_database[asset_id]["objectType"],
-                        "split": asset_id_database[asset_id]["split"],
-                        "xSize": asset_id_database[asset_id]["boundingBox"]["x"],
-                        "ySize": asset_id_database[asset_id]["boundingBox"]["y"],
-                        "zSize": asset_id_database[asset_id]["boundingBox"]["z"],
+                        "assetType": self.pt_db.ASSET_ID_DATABASE[asset_id][
+                            "objectType"
+                        ],
+                        "split": self.pt_db.ASSET_ID_DATABASE[asset_id]["split"],
+                        "xSize": self.pt_db.ASSET_ID_DATABASE[asset_id]["boundingBox"][
+                            "x"
+                        ],
+                        "ySize": self.pt_db.ASSET_ID_DATABASE[asset_id]["boundingBox"][
+                            "y"
+                        ],
+                        "zSize": self.pt_db.ASSET_ID_DATABASE[asset_id]["boundingBox"][
+                            "z"
+                        ],
                     }
                     for asset_id in asset_ids
                 ]
@@ -116,11 +129,11 @@ class AssetGroupGenerator:
             z_max_asset_id = asset_df.iloc[asset_df["zSize"].idxmax()]["assetId"]
 
             chosen_asset_ids["largestXAssets"][asset_name] = (
-                asset_id_database[x_max_asset_id]["objectType"],
+                self.pt_db.ASSET_ID_DATABASE[x_max_asset_id]["objectType"],
                 x_max_asset_id,
             )
             chosen_asset_ids["largestZAssets"][asset_name] = (
-                asset_id_database[z_max_asset_id]["objectType"],
+                self.pt_db.ASSET_ID_DATABASE[z_max_asset_id]["objectType"],
                 z_max_asset_id,
             )
 
@@ -382,13 +395,13 @@ class AssetGroupGenerator:
                 asset_type, asset_id = chosen_asset_ids[name]
             elif use_thumbnail_assets:
                 asset_id = asset_metadata["shownAssetId"]
-                asset_type = asset_id_database[asset_id]["objectType"]
+                asset_type = self.pt_db.ASSET_ID_DATABASE[asset_id]["objectType"]
             else:
                 asset_type, asset_id = random.choice(asset_metadata["assetIds"])
             chosen_asset_ids[name] = (asset_type, asset_id)
 
             # set the y position of the asset
-            bbox_size = asset_id_database[asset_id]["boundingBox"]
+            bbox_size = self.pt_db.ASSET_ID_DATABASE[asset_id]["boundingBox"]
 
             # NOTE: add in randomness
             dtheta = asset_metadata["randomness"]["dtheta"]

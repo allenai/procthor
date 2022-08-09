@@ -19,6 +19,7 @@ from typing import Dict, Sequence, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from procthor.constants import EMPTY_ROOM_ID, OUTDOOR_ROOM_ID
 from procthor.generation.room_specs import RoomSpec
 from procthor.utils.types import InvalidFloorplan, LeafRoom, MetaRoom

@@ -1,8 +1,7 @@
 import random
 from typing import List
 
-from procthor.databases import asset_id_database
-
+from procthor.databases import ProcTHORDatabase
 from procthor.utils.types import Object
 
 TYPES_TO_TOGGLE = {
@@ -13,12 +12,15 @@ TYPES_TO_TOGGLE = {
 TYPES_TO_DIRTY = {"Bed"}
 
 
-def randomize_object_states(objects: List[Object]) -> None:
+def default_randomize_object_states(
+    objects: List[Object],
+    pt_db: ProcTHORDatabase,
+) -> None:
     """Randomize the states of objects."""
 
     def _randomize_states(objects: List[Object]) -> None:
         for obj in objects:
-            obj_type = asset_id_database[obj["assetId"]]["objectType"]
+            obj_type = pt_db.ASSET_ID_DATABASE[obj["assetId"]]["objectType"]
             if obj_type in TYPES_TO_TOGGLE:
                 obj["isOn"] = random.choice([True, False])
             if obj_type in TYPES_TO_DIRTY:
