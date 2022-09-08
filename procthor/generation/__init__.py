@@ -106,6 +106,8 @@ class HouseGenerator:
             logging.debug(f"Using seed {self.seed}")
         if self.seed is not None:
             self.set_seed(self.seed)
+        if self.room_spec_sampler is None:
+            self.room_spec_sampler = PROCTHOR10K_ROOM_SPEC_SAMPLER
         if isinstance(self.room_spec, str):
             self.room_spec = self.room_spec_sampler[self.room_spec]
 
