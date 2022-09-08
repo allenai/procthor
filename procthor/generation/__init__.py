@@ -6,21 +6,22 @@ from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 from ai2thor.controller import Controller
-from attr import Attribute, field, Factory
+from attr import Attribute, Factory, field
 from attrs import define
-
 from procthor.constants import PROCTHOR_INITIALIZATION
 from procthor.utils.types import InvalidFloorplan, SamplingVars, Split
+
+from ..databases import DEFAULT_PROCTHOR_DATABASE, ProcTHORDatabase
 from .ceiling_height import sample_ceiling_height
 from .color_objects import default_randomize_object_colors
 from .doors import default_add_doors
 from .exterior_walls import default_add_exterior_walls
 from .generation import (
     create_empty_partial_house,
+    default_sample_house_structure,
     find_walls,
     get_floor_polygons,
     get_xz_poly_map,
-    default_sample_house_structure,
     scale_boundary_groups,
 )
 from .house import House, HouseStructure, NextSamplingStage, PartialHouse
@@ -31,23 +32,21 @@ from .materials import randomize_wall_and_floor_materials
 from .object_states import default_randomize_object_states
 from .objects import default_add_floor_objects, default_add_rooms
 from .protocols import (
-    AddSmallObjectsProtocol,
     AddDoorsProtocol,
-    AddLightsProtocol,
-    AddSkyboxProtocol,
     AddExteriorWallsProtocol,
-    AddRoomsProtocol,
     AddFloorObjectsProtocol,
-    AddWallObjectsProtocol,
+    AddLightsProtocol,
+    AddRoomsProtocol,
+    AddSkyboxProtocol,
     AddSmallObjectsProtocol,
-    SampleHouseStructureProtocol,
+    AddWallObjectsProtocol,
     RandomizeObjectAttributesProtocol,
+    SampleHouseStructureProtocol,
 )
 from .room_specs import PROCTHOR10K_ROOM_SPEC_SAMPLER, RoomSpec, RoomSpecSampler
 from .skyboxes import default_add_skybox
 from .small_objects import default_add_small_objects
 from .wall_objects import default_add_wall_objects
-from ..databases import ProcTHORDatabase, DEFAULT_PROCTHOR_DATABASE
 
 
 @define
@@ -124,6 +123,7 @@ class HouseGenerator:
         partial_house: Optional[PartialHouse] = None,
         return_partial_houses: bool = False,
         sampling_vars: Optional[SamplingVars] = None,
+        next_sampling_stage: Optional[NextSamplingStage] = NextSamplingStage.STRUCTURE,
     ) -> Tuple[House, Dict[NextSamplingStage, PartialHouse]]:
         """Sample a house specification compatible with AI2-THOR."""
         if self.controller is None:
@@ -145,6 +145,9 @@ class HouseGenerator:
             if self.partial_house is not None:
                 room_spec = self.partial_house.room_spec
                 interior_boundary = self.partial_house.house_structure.interior_boundary
+            elif self.room_spec is not None:
+                room_spec = self.room_spec
+                interior_boundary = None
             else:
                 room_spec = self.room_spec_sampler.sample()
                 interior_boundary = None
@@ -172,6 +175,7 @@ class HouseGenerator:
                 house_structure=house_structure,
                 room_spec=room_spec,
             )
+            partial_house.next_sampling_stage = next_sampling_stage
         else:
             assert partial_house.next_sampling_stage.value > NextSamplingStage.STRUCTURE
 
