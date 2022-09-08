@@ -123,7 +123,6 @@ class HouseGenerator:
         partial_house: Optional[PartialHouse] = None,
         return_partial_houses: bool = False,
         sampling_vars: Optional[SamplingVars] = None,
-        next_sampling_stage: Optional[NextSamplingStage] = NextSamplingStage.STRUCTURE,
     ) -> Tuple[House, Dict[NextSamplingStage, PartialHouse]]:
         """Sample a house specification compatible with AI2-THOR."""
         if self.controller is None:
@@ -175,7 +174,6 @@ class HouseGenerator:
                 house_structure=house_structure,
                 room_spec=room_spec,
             )
-            partial_house.next_sampling_stage = next_sampling_stage
         else:
             assert partial_house.next_sampling_stage.value > NextSamplingStage.STRUCTURE
 
