@@ -175,7 +175,7 @@ def get_xz_poly_map(boundary_groups, room_ids: Set[int]) -> Dict[int, XZPoly]:
         for (x0, z0), (x1, z1) in room_wall_loop:
             dist = x0 * z1 - x1 * z0
             edge_sum += dist
-        if edge_sum > 0:
+        if edge_sum < 0:
             room_wall_loop = [(p1, p0) for p0, p1 in reversed(room_wall_loop)]
 
         out[room_id] = room_wall_loop
