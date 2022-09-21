@@ -3,6 +3,7 @@ import random
 from collections import defaultdict
 from statistics import mean
 from typing import (
+    TYPE_CHECKING,
     Any,
     Dict,
     List,
@@ -13,7 +14,6 @@ from typing import (
     Tuple,
     TypedDict,
     Union,
-    TYPE_CHECKING,
 )
 
 import numpy as np
@@ -21,8 +21,6 @@ import pandas as pd
 from ai2thor.controller import Controller
 from attr import field
 from attrs import define
-from shapely.geometry import LineString, MultiPolygon, Point, Polygon
-
 from procthor.constants import (
     MARGIN,
     MAX_INTERSECTING_OBJECT_RETRIES,
@@ -34,11 +32,9 @@ from procthor.constants import (
     P_W1_ASSET_SKIPPED,
     PADDING_AGAINST_WALL,
 )
-from procthor.databases import (
-    get_spawnable_asset_group_info,
-    ProcTHORDatabase,
-)
+from procthor.databases import ProcTHORDatabase, get_spawnable_asset_group_info
 from procthor.utils.types import Object, Split, Vector3
+from shapely.geometry import LineString, MultiPolygon, Point, Polygon
 
 if TYPE_CHECKING:
     from . import PartialHouse
@@ -307,7 +303,7 @@ class OrthogonalPolygon:
                 if len(points1 & points2) == 2:
                     out.add(
                         (
-                            min(x0_0, x1_0, x1_1, x1_1),
+                            min(x0_0, x1_0, x0_1, x1_1),
                             min(z0_0, z1_0, z0_1, z1_1),
                             max(x0_0, x1_0, x0_1, x1_1),
                             max(z0_0, z1_0, z0_1, z1_1),
