@@ -104,7 +104,7 @@ class HouseUpgradeManager():
 
     class From_0_0_0(HouseVersionUpgrader):
         def __1_0_0(self, house):
-            o = copy.deepcopy(house)
+            out = copy.deepcopy(house)
             remapping = [
                 (['proceduralParameters', 'ceilingMaterial'], ['proceduralParameters', 'ceilingMaterial', 'name'], False),
                 (['proceduralParameters', 'ceilingMaterialTilingXDivisor'], ['proceduralParameters', 'ceilingMaterial', 'tilingDivisorX'], True),
@@ -113,22 +113,23 @@ class HouseUpgradeManager():
                 (['rooms', 'floorMaterialTilingXDivisor'], ['rooms', 'floorMaterial', 'tilingDivisorX'], True),
                 (['rooms', 'floorMaterialTilingYDivisor'], ['rooms', 'floorMaterial', 'tilingDivisorY'], True),
                 (['objects', 'materialProperties'], ['objects', 'material'], True),
-                (['walls', 'materialProperties'], ['objects', 'material'], True),
-                (['walls', 'materialId'], ['objects', 'material', 'name'], True),
+                # (['walls', 'materialProperties'], ['walls', 'material'], True),
+                (['walls', 'materialId'], ['walls', 'material', 'name'], True),
                 (['rooms', 'ceilings', 'materialProperties'], ['rooms', 'ceilings', 'material'], True),
                 (['rooms', 'ceilings', 'material'], ['rooms', 'ceilings', 'material', 'name'], True),
                 (['rooms', 'ceilings', 'tilingDivisorX'], ['rooms', 'ceilings', 'material', 'tilingDivisorX'], True),
                 (['rooms', 'ceilings', 'tilingDivisorY'], ['rooms', 'ceilings', 'material', 'tilingDivisorY'], True),
                 (['walls', 'materialProperties'], ['walls', 'material'], True),
                 (['walls', 'material'], ['walls', 'material', 'name'], False),
+                (['walls', 'color'], ['walls', 'material', 'color'], False),
             ]
 
             for (source_keys, target_keys, delete_source_key) in remapping:
-                remap_keys(house, source_keys, o, o, target_keys, delete_source_key)
+                remap_keys(house, source_keys, out, out, target_keys, delete_source_key)
 
             hole_assets = DEFAULT_PROCTHOR_DATABASE.ASSET_ID_DATABASE
 
-            for hole in o['windows'] + o['doors']:
+            for hole in out['windows'] + out['doors']:
                 asset_id = hole['assetId']
                 asset = hole_assets[asset_id]
                 hole['holePolygon'] = [
@@ -147,45 +148,8 @@ class HouseUpgradeManager():
                 del hole['boundingBox']
                 del hole['assetOffset']
 
-            for wall in o['walls']:
+            for wall in out['walls']:
                 wall_id = wall['id']
                 if wall_id.split('|')[1] == 'exterior':
                     wall['roomId'] = 'exterior'
-
-            # processing on rooms, not needed for 1_0_0
-            # for room in o['rooms'] + [{'id': 'exterior'}]:
-            #     room_id = room['id']
-            #     walls = [room_wall for room_wall in o['walls'] if room_wall['roomId'] == room_id]
-            #     edge_sum = 0
-            #     for i in range(len(walls)):
-            #         w0 = walls[i]
-            #         # w1 = walls[i+1]
-            #         p0 = w0['polygon'][0]
-            #         p1 = w0['polygon'][1]
-            #         pseudo_cross = p0['x'] * p1['z'] - p1['x'] * p0['z']
-            #
-            #         edge_sum += pseudo_cross
-                # For changing the winding
-                # wall_id_set = {w['id'] for w in walls}
-                # # Workaround, real solution is checking winding using a point inside the
-                # # convex polygon the walls enclose, not all rooms are convex so subdivision is needed
-                # if edge_sum < 0 or room_id == 'exterior':
-                #     holes = [h for h in o['doors'] + o['windows'] if h['wall0'] in wall_id_set]
-                #     for h in holes:
-                #         # if not h['wall0'].split("|")[2] == 'exterior':
-                #         wall0 = h['wall0']
-                #         h['wall0'] = h['wall1']
-                #         h['wall1'] = wall0
-                #         room0 = h['room0']
-                #         h['room0'] = h['room1']
-                #         h['room1'] = room0
-                #
-                #     for w in walls:
-                #         p0 = w['polygon'][0]
-                #         w['polygon'][0] = w['polygon'][1]
-                #         w['polygon'][1] = p0
-                #         p2 = w['polygon'][2]
-                #         w['polygon'][2] = w['polygon'][3]
-                #         w['polygon'][3] = p2
-
-            return o
+            return out
