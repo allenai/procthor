@@ -73,3 +73,6 @@ OUTDOOR_ROOM_ID = 1
 
 EMPTY_ROOM_ID = 0
 """The roomId of the entries in the matrix that are empty."""
+
+LATEST_VERSION = (1, 0, 0)
+"""Latest valid version of the house json data format"""

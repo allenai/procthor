@@ -7,22 +7,6 @@ import copy
 from multiprocessing import Pool, Value
 
 from procthor.databases import DEFAULT_PROCTHOR_DATABASE
-LATEST_VERSION = (1, 0, 0)
-
-class HouseVersionUpgrader(object):
-    def upgrade_to(self, version, house):
-        to_map = {
-            (*([int(x) for x in n.split("__")[-1].split("_")]),):v for
-                n, v in inspect.getmembers(self, inspect.ismethod)
-                    if isinstance(v, types.MethodType) and n != 'upgrade_to'
-        }
-
-        if version not in to_map:
-            raise ValueError(f"Invalid target version: `{version}`. Upgrade to valid version among {to_map.keys()}")
-        return to_map[version](house)
-
-
-
 
 def delete_key_path(data, keys):
     if len(keys) == 1:
@@ -35,25 +19,12 @@ def delete_key_path(data, keys):
         elif isinstance(data, dict) and keys[0] in data:
             delete_key_path(data[keys[0]], keys[1:])
 
-# def set_key_path(data, keys, value):
-#     if len(keys) == 1:
-#         data[keys[0]] =
-#     else:
-#         if isinstance(data, list):
-#             for v in data:
-#                 delete_key_path(data[keys[0]], keys[1:])
-#         elif isinstance(data, dict):
-#             delete_key_path(data[keys[0]], keys[1:])
-
-
 def get_key_path(data, keys):
-    # print(data)
     if not keys:
         return data
     else:
         if isinstance(data, list):
             out_list = []
-            # print(list(range(len(data))))
             for indx in list(range(len(data))):
                 v = data[indx]
                 if keys[0] in v:
@@ -69,13 +40,10 @@ def get_key_path(data, keys):
                 return None
 
 def remap_keys(source, source_keys, root_out, out, keys, delete_source_key, key_depth=0, prev_out=None, all_keys=None):
-    print(f"depth {key_depth} keys {keys} {len(keys)}")
     if len(keys) == 1:
-        print(f"source out {out} keys {keys}")
         replace_val = get_key_path(source, source_keys)
         if delete_source_key:
             delete_key_path(root_out, source_keys)
-        print(f"source {replace_val} out {out} keys {keys} replaceval {replace_val}")
 
         if replace_val:
             if isinstance(out, list) and isinstance(replace_val, list):
@@ -89,26 +57,24 @@ def remap_keys(source, source_keys, root_out, out, keys, delete_source_key, key_
 
     else:
 
-        # if not isinstance(out, list) and not isinstance(out[keys[0]], dict):
-        #     print(f"depth {key_depth} otu[keys[0]] {out[keys[0]]} keys[0] {keys[0]} {len(keys)}")
-        #     out[keys[0]] = {}
-        # # if isinstance(out, dict) and keys[0] not in out:
-        # #     out[keys[0]] = {}
-        # if len(keys) >= key_depth+1:
-        #     if isinstance(out, dict) and keys[0] not in out or not isinstance(out[keys[0]], dict):
-        #         out[keys[0]] = {}
-
         if isinstance(out, dict):
-            print(f' --- keys {keys[0]} out {out}')
-            # if keys[0] not in out or not isinstance(out[keys[0]], dict):
-            #     out[keys[0]] = {}
             remap_keys(source, source_keys, root_out, out[keys[0]], keys[1:], delete_source_key, key_depth + 1, out, keys)
         elif isinstance(out, list):
-            print(f'==== {keys[0]} out {out}')
             new_source = get_key_path(source, source_keys[:key_depth] )
             for i in range(len(out)):
                 remap_keys(new_source[i], source_keys[key_depth:], root_out, out[i], keys, delete_source_key, key_depth, out, keys)
 
+class HouseVersionUpgrader(object):
+    def upgrade_to(self, version, house):
+        to_map = {
+            (*([int(x) for x in n.split("__")[-1].split("_")]),):v for
+                n, v in inspect.getmembers(self, inspect.ismethod)
+                    if isinstance(v, types.MethodType) and n != 'upgrade_to'
+        }
+
+        if version not in to_map:
+            raise ValueError(f"Invalid target version: `{version}`. Upgrade to valid version among {to_map.keys()}")
+        return to_map[version](house)
 
 class HouseUpgradeManager():
     @classmethod
@@ -117,10 +83,7 @@ class HouseUpgradeManager():
 
     @classmethod
     def upgrade_to(cls, house, version):
-
         d = [c for c in dir(HouseUpgradeManager) if inspect.isclass(getattr(HouseUpgradeManager, c)) and getattr(HouseUpgradeManager, c)]
-
-        print(d)
         from_map = {
             (*([int(x) for x in c.split("_")[1:]]),):
                 getattr(HouseUpgradeManager, c)() for c in dir(HouseUpgradeManager)
@@ -128,7 +91,6 @@ class HouseUpgradeManager():
         }
         from_map[None] = from_map[(0, 0, 0)]
 
-        # print(house['version'])
         house_version = HouseUpgradeManager.parse_version(house.get('version'))
 
         if house_version not in from_map:
