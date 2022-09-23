@@ -125,6 +125,7 @@ class HouseGenerator:
         sampling_vars: Optional[SamplingVars] = None,
     ) -> Tuple[House, Dict[NextSamplingStage, PartialHouse]]:
         """Sample a house specification compatible with AI2-THOR."""
+        print("hello0")
         if self.controller is None:
             # NOTE: assumes images are never used by this Controller.
             self.controller = Controller(quality="Low", **PROCTHOR_INITIALIZATION)
@@ -137,6 +138,7 @@ class HouseGenerator:
         sampling_vars = (
             SamplingVars.sample() if sampling_vars is None else sampling_vars
         )
+        print("here!!")
 
         gfs = self.generation_functions
         if partial_house is None:
@@ -175,7 +177,7 @@ class HouseGenerator:
                 room_spec=room_spec,
             )
         else:
-            assert partial_house.next_sampling_stage.value > NextSamplingStage.STRUCTURE
+            assert partial_house.next_sampling_stage > NextSamplingStage.STRUCTURE
 
         if return_partial_houses:
             sampling_stage_to_ph[partial_house.next_sampling_stage] = copy.deepcopy(
@@ -196,7 +198,7 @@ class HouseGenerator:
         # NOTE: DOORS
         if partial_house.next_sampling_stage <= NextSamplingStage.DOORS:
             with advance_and_record_partial(partial_house):
-                door_polygons = gfs.add_doors(
+                gfs.add_doors(
                     partial_house=partial_house,
                     controller=self.controller,
                     pt_db=self.pt_db,
@@ -248,7 +250,7 @@ class HouseGenerator:
                     split=self.split,
                     floor_polygons=floor_polygons,
                     room_type_map=partial_house.room_spec.room_type_map,
-                    door_polygons=door_polygons,
+                    door_polygons=partial_house.door_polygons,
                 )
 
         if partial_house.next_sampling_stage <= NextSamplingStage.FLOOR_OBJS:

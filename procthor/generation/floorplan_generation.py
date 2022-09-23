@@ -19,7 +19,6 @@ from typing import Dict, Sequence, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 from procthor.constants import EMPTY_ROOM_ID, OUTDOOR_ROOM_ID
 from procthor.generation.room_specs import RoomSpec
 from procthor.utils.types import InvalidFloorplan, LeafRoom, MetaRoom
@@ -482,6 +481,11 @@ def generate_floorplan(
             " This means the sampled interior boundary is too small for the room"
             " spec. Try again with a another interior boundary.\n"
             f"interior_boundary:\n{interior_boundary}\n, room_spec:\n{room_spec}"
+        )
+
+    if EMPTY_ROOM_ID in best_floorplan:
+        raise InvalidFloorplan(
+            "Not all entries in the interior boundary matrix can be connected!"
         )
 
     return best_floorplan

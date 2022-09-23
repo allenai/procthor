@@ -5,27 +5,27 @@ import logging
 import random
 from collections import Counter
 from functools import total_ordering
-from typing import Dict, Optional, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 from ai2thor.controller import Controller
 from attrs import define
 from moviepy.editor import ImageSequenceClip
-from shapely.geometry import Point
-
-from procthor.constants import PROCTHOR_INITIALIZATION, SCHEMA, FLOOR_Y
+from procthor.constants import FLOOR_Y, PROCTHOR_INITIALIZATION, SCHEMA
 from procthor.generation.agent import AgentPose, generate_starting_pose
 from procthor.utils.types import (
     BoundingBox,
-    HouseDict,
-    Vector3,
-    Wall,
     Door,
-    Window,
+    HouseDict,
     Object,
     ProceduralParameters,
     RoomType,
+    Vector3,
+    Wall,
+    Window,
 )
+from shapely.geometry import Point
+
 from .objects import ProceduralRoom
 from .room_specs import RoomSpec
 
@@ -232,11 +232,13 @@ class PartialHouse:
     room_spec: RoomSpec
     procedural_parameters: ProceduralParameters
 
+
     room_types: Optional[List[RoomType]] = None
     doors: Optional[List[Door]] = None
     windows: Optional[List[Window]] = None
     objects: Optional[List[Object]] = None
     walls: Optional[List[Wall]] = None
+    door_polygons: Optional[Any] = None
 
     rooms: Optional[Dict[int, ProceduralRoom]] = None  # TODO: Should be `rooms_map`
     next_sampling_stage: Optional[NextSamplingStage] = NextSamplingStage.STRUCTURE

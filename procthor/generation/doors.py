@@ -4,14 +4,12 @@ import logging
 import random
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Dict, List, Set, Tuple, Union, TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict, List, Set, Tuple, Union
 
 import pandas as pd
 from ai2thor.controller import Controller
 from attr import field
 from attrs import define
-from shapely.geometry import Polygon
-
 from procthor.constants import OUTDOOR_ROOM_ID
 from procthor.utils.types import (
     BoundaryGroups,
@@ -23,6 +21,8 @@ from procthor.utils.types import (
     Vector3,
     Wall,
 )
+from shapely.geometry import Polygon
+
 from ..databases import ProcTHORDatabase
 
 if TYPE_CHECKING:
@@ -117,6 +117,7 @@ def default_add_doors(
         boundary_groups=boundary_groups,
         pt_db=pt_db,
     )
+    partial_house.door_polygons = polygons_to_subtract
     return polygons_to_subtract
 
 
@@ -133,6 +134,7 @@ def select_outdoor_openings(
     doors_to_outside = []
 
     # NOTE: Check preferred room types
+    # add a breakpoint
     for room_id_1, room_id_2 in outdoor_candidates:
         room_id = room_id_1 if room_id_2 == OUTDOOR_ROOM_ID else room_id_2
         room_type = room_type_map[room_id]
