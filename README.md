@@ -32,3 +32,14 @@ This code is used to generate houses for the [ProcTHOR](https://procthor.allenai
   year={2022}
 }
 ```
+
+## 👋 Our Team
+
+ProcTHOR is an open-source project built by the [PRIOR team](//prior.allenai.org) at the [Allen Institute for AI](//allenai.org) (AI2).
+AI2 is a non-profit institute with the mission to contribute to humanity through high-impact AI research and engineering.
+
+<br />
+
+<a href="//prior.allenai.org">
+<p align="center"><img width="100%" src="https://raw.githubusercontent.com/allenai/ai2thor/main/doc/static/ai2-prior.svg" /></p>
+</a>
