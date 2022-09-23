@@ -54,9 +54,7 @@ def remap_keys(source, source_keys, root_out, out, keys, delete_source_key, key_
                     prev_out[all_keys[-2]] = {}
                     out = prev_out[all_keys[-2]]
                 out[keys[0]] = replace_val
-
     else:
-
         if isinstance(out, dict):
             remap_keys(source, source_keys, root_out, out[keys[0]], keys[1:], delete_source_key, key_depth + 1, out, keys)
         elif isinstance(out, list):
@@ -73,13 +71,13 @@ class HouseVersionUpgrader(object):
         }
 
         if version not in to_map:
-            raise ValueError(f"Invalid target version: `{version}`. Upgrade to valid version among {to_map.keys()}")
+            raise ValueError(f"Invalid target version: '{version}'. Upgrade to valid version among: {', '.join([str(k) for k in to_map.keys()])}")
         return to_map[version](house)
 
 class HouseUpgradeManager():
     @classmethod
     def parse_version(cls, version):
-        return (*([int(v) for v in version.split(".")]),) if version is not None else (0, 0, 0)
+        return (*([int(v) for v in version.split("_")]),) if version is not None else (0, 0, 0)
 
     @classmethod
     def upgrade_to(cls, house, version):
@@ -94,8 +92,10 @@ class HouseUpgradeManager():
         house_version = HouseUpgradeManager.parse_version(house.get('version'))
 
         if house_version not in from_map:
-            raise ValueError(f"Invalid source version: `{house_version}`. Upgrade from valid versions among {from_map.keys()}")
+            raise ValueError(f"Invalid source version: '{house_version}'. Upgrade from valid versions among: {', '.join([str(k) for k in from_map.keys()])}")
 
+        if house_version == version:
+            return house
         if house_version < version:
             return from_map[house_version].upgrade_to(version, house)
         else:
