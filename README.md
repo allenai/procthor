@@ -10,7 +10,7 @@ ProcTHOR procedurally generates interactive, diverse, and semantically plausible
 
 ## Example
 
-Install `procthor`:
+Install `procthor` with PyPi:
 ```bash
 pip install procthor
 ```
