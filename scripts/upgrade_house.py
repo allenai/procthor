@@ -31,6 +31,8 @@ with open(args.source, 'r') as f:
         result.append(out_house)
     if len(result) == 1:
         result = result[0]
+    if os.path.exists(args.output) and not args.overwrite:
+        raise ValueError(f"Output file '{args.output}' already exists. Pass -o option to overwrite it.")
     with open(args.output, 'w') as fo:
         options = {'sort_keys': args.sort_keys}
         if args.indent:
