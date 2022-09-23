@@ -126,7 +126,6 @@ class HouseGenerator:
         next_sampling_stage: Optional[NextSamplingStage] = NextSamplingStage.STRUCTURE,
     ) -> Tuple[House, Dict[NextSamplingStage, PartialHouse]]:
         """Sample a house specification compatible with AI2-THOR."""
-        print("hello0")
         if self.controller is None:
             # NOTE: assumes images are never used by this Controller.
             self.controller = Controller(quality="Low", **PROCTHOR_INITIALIZATION)
@@ -139,7 +138,6 @@ class HouseGenerator:
         sampling_vars = (
             SamplingVars.sample() if sampling_vars is None else sampling_vars
         )
-        print("here!!")
 
         gfs = self.generation_functions
         if partial_house is None:
