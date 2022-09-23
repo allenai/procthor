@@ -8,7 +8,7 @@ import argparse
 sys.path.append('.')
 
 from procthor.utils.upgrade_house_version import HouseUpgradeManager
-from procthor.constants import LATEST_VERSION
+from procthor.constants import CURRENT_VERSION
 
 parser = argparse.ArgumentParser(description='Convert house json to latest version.')
 parser.add_argument('source', metavar='source_filename', type=str, help='Source json, should be an array of houses or single house')
@@ -27,7 +27,7 @@ with open(args.source, 'r') as f:
     result = []
     for i in tqdm(range(len(houses))):
         house = houses[i]
-        out_house = HouseUpgradeManager.upgrade_to(house, LATEST_VERSION)
+        out_house = HouseUpgradeManager.upgrade_to(house, CURRENT_VERSION)
         result.append(out_house)
     if len(result) == 1:
         result = result[0]
