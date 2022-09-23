@@ -10,7 +10,12 @@ ProcTHOR procedurally generates interactive, diverse, and semantically plausible
 
 ## Example
 
-Example:
+Install `procthor`:
+```bash
+pip install procthor
+```
+
+And then run the example script to generate a new house:
 ```bash
 export PYTHONPATH=$PYTHONPATH:$PWD
 python scripts/example.py
