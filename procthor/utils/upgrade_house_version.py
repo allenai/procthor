@@ -113,7 +113,6 @@ class HouseUpgradeManager():
                 (['rooms', 'floorMaterialTilingXDivisor'], ['rooms', 'floorMaterial', 'tilingDivisorX'], True),
                 (['rooms', 'floorMaterialTilingYDivisor'], ['rooms', 'floorMaterial', 'tilingDivisorY'], True),
                 (['objects', 'materialProperties'], ['objects', 'material'], True),
-                # (['walls', 'materialProperties'], ['walls', 'material'], True),
                 (['walls', 'materialId'], ['walls', 'material', 'name'], True),
                 (['rooms', 'ceilings', 'materialProperties'], ['rooms', 'ceilings', 'material'], True),
                 (['rooms', 'ceilings', 'material'], ['rooms', 'ceilings', 'material', 'name'], True),
