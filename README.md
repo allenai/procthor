@@ -1,5 +1,5 @@
 <h1 align="center">
-  🏡 ProcTHOR
+  🏘️ ProcTHOR
 </h1>
 
 <h3 align="center"><em>Scaling Embodied AI by Procedurally Generating Interactive 3D Environments</em></h3>
