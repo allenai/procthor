@@ -1,8 +1,15 @@
-# ProcTHOR
+<h1 align="center">
+  🏡 ProcTHOR
+</h1>
 
-🏡 Procedurally Generate Houses compatible with AI2-THOR.
+<h3 align="center"><em>Scaling Embodied AI by orders of magnitude by procedurally generating interactive 3D environments.</em></h3>
 
-## Installation
+![procthor-cover(1)](https://user-images.githubusercontent.com/28768645/191896912-58a2234a-ed50-40b6-a534-348db7260756.jpg)
+
+
+ProcTHOR procedurally generates interactive, diverse, and semantically plausible houses that are compatible with AI2-THOR.
+
+## Example
 
 Example:
 ```bash
