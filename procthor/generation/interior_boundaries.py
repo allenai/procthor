@@ -1,11 +1,12 @@
 #%%
 import logging
+import queue
 import random
 from typing import Optional, Tuple
 
 import numpy as np
-
 from procthor.constants import OUTDOOR_ROOM_ID
+from scipy.ndimage.measurements import label
 
 DEFAULT_AVERAGE_ROOM_SIZE = 3
 """Average room size in meters"""
@@ -15,6 +16,32 @@ DEFAULT_MIN_HOUSE_SIDE_LENGTH = 2
 
 DEFAULT_MAX_BOUNDARY_CUT_AREA = 6
 """Max area of a single chop along the boundary."""
+
+
+def count_components(boundary):
+    boundary = boundary == 1
+    structure = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
+    labeled_boundary, num_components = label(boundary, structure)
+    return num_components
+
+
+def is_valid_cut(boundary, chop_side, z_cut, x_cut):
+    # Apply cut and validate
+    if chop_side == 0:
+        # NOTE: top-right corner
+        boundary[:z_cut, -x_cut:] = OUTDOOR_ROOM_ID
+    elif chop_side == 1:
+        # NOTE: top-left corner
+        boundary[:z_cut, :x_cut] = OUTDOOR_ROOM_ID
+    elif chop_side == 2:
+        # NOTE: bottom-left corner
+        boundary[-z_cut:, :x_cut] = OUTDOOR_ROOM_ID
+    elif chop_side == 3:
+        # NOTE: bottom-right corner
+        boundary[-z_cut:, -x_cut:] = OUTDOOR_ROOM_ID
+
+    num_components = count_components(boundary=boundary)
+    return num_components == 1
 
 
 def get_n_cuts(num_rooms: int) -> int:
@@ -57,32 +84,42 @@ def sample_interior_boundary(
     n_cuts = get_n_cuts(num_rooms=num_rooms)
     logging.debug(f"Number of cuts: {n_cuts}")
 
-    chop_sides = np.random.randint(0, 4, size=n_cuts)
+    count_cuts = 0
 
-    for chop_side in chop_sides:
-        x_cut = np.random.randint(
-            low=1, high=max(2, min(x_size - 1, max_boundary_cut_area // 2))
-        )
-        z_cut_candidates = []
+    for cut_id in range(n_cuts):
+        count_cuts += 1
+        is_cut_successful = False
+        while not is_cut_successful:
+            chop_side = np.random.randint(0, 4)
+            x_cut = np.random.randint(
+                low=1, high=max(2, min(x_size - 1, max_boundary_cut_area // 2))
+            )
+            z_cut_candidates = []
 
-        i = 1
-        while x_cut * i <= max_boundary_cut_area and i + 1 <= z_size:
-            z_cut_candidates.append(i)
-            i += 1
+            i = 1
+            while x_cut * i <= max_boundary_cut_area and i + 1 <= z_size:
+                if is_valid_cut(np.copy(boundary), chop_side, i, x_cut):
+                    z_cut_candidates.append(i)
+                i += 1
 
-        z_cut = random.choice(z_cut_candidates)
+            # Resample valid cut candidates
+            if len(z_cut_candidates) == 0:
+                continue
 
-        if chop_side == 0:
-            # NOTE: top-right corner
-            boundary[:z_cut, -x_cut:] = OUTDOOR_ROOM_ID
-        elif chop_side == 1:
-            # NOTE: top-left corner
-            boundary[:z_cut, :x_cut] = OUTDOOR_ROOM_ID
-        elif chop_side == 2:
-            # NOTE: bottom-left corner
-            boundary[-z_cut:, :x_cut] = OUTDOOR_ROOM_ID
-        elif chop_side == 3:
-            # NOTE: bottom-right corner
-            boundary[-z_cut:, -x_cut:] = OUTDOOR_ROOM_ID
+            z_cut = random.choice(z_cut_candidates)
+
+            if chop_side == 0:
+                # NOTE: top-right corner
+                boundary[:z_cut, -x_cut:] = OUTDOOR_ROOM_ID
+            elif chop_side == 1:
+                # NOTE: top-left corner
+                boundary[:z_cut, :x_cut] = OUTDOOR_ROOM_ID
+            elif chop_side == 2:
+                # NOTE: bottom-left corner
+                boundary[-z_cut:, :x_cut] = OUTDOOR_ROOM_ID
+            elif chop_side == 3:
+                # NOTE: bottom-right corner
+                boundary[-z_cut:, -x_cut:] = OUTDOOR_ROOM_ID
+            is_cut_successful = True
 
     return boundary
