@@ -19,7 +19,7 @@ DEFAULT_MAX_BOUNDARY_CUT_AREA = 6
 
 
 def count_components(boundary):
-    boundary = boundary != 1
+    boundary = boundary != OUTDOOR_ROOM_ID
     structure = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
     _, num_components = label(boundary, structure)
     return num_components
