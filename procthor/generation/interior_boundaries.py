@@ -19,9 +19,9 @@ DEFAULT_MAX_BOUNDARY_CUT_AREA = 6
 
 
 def count_components(boundary):
-    boundary = boundary == 1
+    boundary = boundary != 1
     structure = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
-    labeled_boundary, num_components = label(boundary, structure)
+    _, num_components = label(boundary, structure)
     return num_components
 
 
@@ -84,30 +84,24 @@ def sample_interior_boundary(
     n_cuts = get_n_cuts(num_rooms=num_rooms)
     logging.debug(f"Number of cuts: {n_cuts}")
 
-    count_cuts = 0
+    chop_sides = np.random.randint(0, 4, size=n_cuts)
 
-    for cut_id in range(n_cuts):
-        count_cuts += 1
-        is_cut_successful = False
-        while not is_cut_successful:
-            chop_side = np.random.randint(0, 4)
-            x_cut = np.random.randint(
-                low=1, high=max(2, min(x_size - 1, max_boundary_cut_area // 2))
-            )
-            z_cut_candidates = []
+    for chop_side in chop_sides:
+        x_cut = np.random.randint(
+            low=1, high=max(2, min(x_size - 1, max_boundary_cut_area // 2))
+        )
+        z_cut_candidates = []
 
-            i = 1
-            while x_cut * i <= max_boundary_cut_area and i + 1 <= z_size:
-                if is_valid_cut(np.copy(boundary), chop_side, i, x_cut):
-                    z_cut_candidates.append(i)
-                i += 1
+        i = 1
+        while x_cut * i <= max_boundary_cut_area and i + 1 <= z_size:
+            z_cut_candidates.append(i)
+            i += 1
 
-            # Resample valid cut candidates
-            if len(z_cut_candidates) == 0:
-                continue
+        z_cut = random.choice(z_cut_candidates)
 
-            z_cut = random.choice(z_cut_candidates)
-
+        if is_valid_cut(
+            np.copy(boundary), chop_side, z_cut, x_cut
+        ):
             if chop_side == 0:
                 # NOTE: top-right corner
                 boundary[:z_cut, -x_cut:] = OUTDOOR_ROOM_ID
@@ -120,6 +114,5 @@ def sample_interior_boundary(
             elif chop_side == 3:
                 # NOTE: bottom-right corner
                 boundary[-z_cut:, -x_cut:] = OUTDOOR_ROOM_ID
-            is_cut_successful = True
 
     return boundary
