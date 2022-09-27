@@ -12,7 +12,7 @@ other objects in the scene (e.g., there are no objects on top of the object,
 opening doesn't cause the size of the object to expand in the x/z direction.)
 """
 
-SCHEMA = "0.0.1"
+SCHEMA = "1.0.0"
 """The schema version of the json file to create the house."""
 
 MARGIN = {
@@ -73,6 +73,3 @@ OUTDOOR_ROOM_ID = 1
 
 EMPTY_ROOM_ID = 0
 """The roomId of the entries in the matrix that are empty."""
-
-CURRENT_VERSION = (1, 0, 0)
-"""Latest valid version of the house json data format"""
