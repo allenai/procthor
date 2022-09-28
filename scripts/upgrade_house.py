@@ -4,9 +4,6 @@ import json
 from tqdm import tqdm
 import argparse
 
-# Needed for running locally
-sys.path.append(".")
-
 from procthor.utils.upgrade_house_version import HouseUpgradeManager
 from procthor.constants import SCHEMA
 
