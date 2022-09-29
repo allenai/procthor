@@ -1,14 +1,11 @@
-from multiprocessing import Pool
-import prior
-import os
-import sys
-import json
-from tqdm import tqdm
 import copy
 import gzip
+import json
 
-from procthor.utils.upgrade_house_version import HouseUpgradeManager
+import prior
 from procthor.constants import SCHEMA
+from procthor.utils.upgrade_house_version import HouseUpgradeManager
+from tqdm import tqdm
 
 dataset = prior.load_dataset("procthor-10k")
 dataset_copy = copy.deepcopy(dataset)

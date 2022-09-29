@@ -53,7 +53,9 @@ if __name__ == "__main__":
         house["walls"].append(
             {
                 "id": f"wall|{i}",
-                "material": "Walldrywall3",
+                "material": {
+                    "name": "Walldrywall3"
+                },
                 "polygon": [
                     {"x": i * 4, "y": 0, "z": z},
                     {"x": i * 4 + 3, "y": 0, "z": z},
@@ -93,7 +95,9 @@ if __name__ == "__main__":
         house["walls"].append(
             {
                 "id": f"wall|{i}|1",
-                "material": "Walldrywall3",
+                "material": {
+                    "name": "Walldrywall3"
+                },
                 "polygon": [
                     {"x": i * 4, "y": 0, "z": z},
                     {"x": i * 4 + 3, "y": 0, "z": z},
@@ -128,7 +132,9 @@ if __name__ == "__main__":
         house["walls"].append(
             {
                 "id": f"wall|{i}|2",
-                "material": "Walldrywall3",
+                "material": {
+                    "name": "Walldrywall3"
+                },
                 "polygon": [
                     {"x": i * 4, "y": 0, "z": z},
                     {"x": i * 4 + 3, "y": 0, "z": z},
@@ -168,7 +174,9 @@ if __name__ == "__main__":
         house["walls"].append(
             {
                 "id": f"wall|{i}|3",
-                "material": "Walldrywall3",
+                "material": {
+                    "name": "Walldrywall3"
+                },
                 "polygon": [
                     {"x": i * 4 + 3, "y": 0, "z": z},
                     {"x": i * 4, "y": 0, "z": z},
@@ -208,7 +216,9 @@ if __name__ == "__main__":
         house["walls"].append(
             {
                 "id": f"wall|{i}|4",
-                "material": "Walldrywall3",
+                "material": {
+                    "name": "Walldrywall3"
+                },
                 "polygon": [
                     {"x": i * 4 + 3, "y": 0, "z": z},
                     {"x": i * 4, "y": 0, "z": z},

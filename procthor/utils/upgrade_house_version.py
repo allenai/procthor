@@ -1,16 +1,12 @@
-import json
-import os
-import sys
+import copy
 import inspect
 import types
-import typing
-import copy
-from multiprocessing import Pool, Value
+from typing import Any, Dict, List, Tuple
 
 from procthor.databases import DEFAULT_PROCTHOR_DATABASE
 
 
-def delete_key_path(data, keys) -> None:
+def delete_key_path(data: Dict[str, Any], keys: List[str]) -> None:
     if len(keys) == 1:
         if keys[0] in data:
             del data[keys[0]]
@@ -22,7 +18,7 @@ def delete_key_path(data, keys) -> None:
             delete_key_path(data[keys[0]], keys[1:])
 
 
-def get_key_path(data, keys) -> typing.Any:
+def get_key_path(data: Dict[str, Any], keys: List[str]) -> Any:
     if not keys:
         return data
     if isinstance(data, list):
@@ -33,15 +29,15 @@ def get_key_path(data, keys) -> typing.Any:
 
 
 def remap_keys(
-    source,
-    source_keys,
-    root_out,
-    out,
-    keys,
-    delete_source_key,
-    key_depth=0,
-    prev_out=None,
-    all_keys=None,
+    source: Dict[str, Any],
+    source_keys: List[str],
+    root_out: Dict[str, Any],
+    out: Dict[str, Any],
+    keys: List[str],
+    delete_source_key: bool,
+    key_depth: int = 0,
+    prev_out: Dict[str, Any] = None,
+    all_keys: List[str] = None,
 ) -> None:
     if len(keys) == 1:
         replace_val = get_key_path(source, source_keys)
@@ -87,7 +83,11 @@ def remap_keys(
 
 
 class HouseVersionUpgrader:
-    def upgrade_to(self, version, house):
+    def upgrade_to(
+        self,
+        version: Tuple[int, int, int],
+        house: Dict[str, Any],
+    ) -> Dict[str, Any]:
         to_map = {
             (*([int(x) for x in n.split("__")[-1].split("_")]),): v
             for n, v in inspect.getmembers(self, inspect.ismethod)
@@ -103,7 +103,7 @@ class HouseVersionUpgrader:
 
 class HouseUpgradeManager:
     @classmethod
-    def parse_schema_version(cls, schema):
+    def parse_schema_version(cls, schema: str) -> Tuple[int, int, int]:
         return (
             (*([int(v) for v in schema.split(".")]),)
             if schema is not None
@@ -111,7 +111,7 @@ class HouseUpgradeManager:
         )
 
     @classmethod
-    def upgrade_to(cls, house, upgrade_schema):
+    def upgrade_to(cls, house: Dict[str, Any], upgrade_schema: str) -> Dict[str, Any]:
         d = [
             c
             for c in dir(HouseUpgradeManager)
@@ -145,7 +145,7 @@ class HouseUpgradeManager:
             )
 
     class From_0_0_1(HouseVersionUpgrader):
-        def __1_0_0(self, house):
+        def __1_0_0(self, house: Dict[str, Any]) -> Dict[str, Any]:
             out = copy.deepcopy(house)
             remapping = [
                 (

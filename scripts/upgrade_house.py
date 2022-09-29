@@ -1,11 +1,10 @@
-import os
-import sys
-import json
-from tqdm import tqdm
 import argparse
+import json
+import os
 
-from procthor.utils.upgrade_house_version import HouseUpgradeManager
 from procthor.constants import SCHEMA
+from procthor.utils.upgrade_house_version import HouseUpgradeManager
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description="Convert house json to latest version.")
 parser.add_argument(
