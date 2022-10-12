@@ -264,8 +264,9 @@ def select_openings(
 
         # NOTE: indexes that still need connecting rooms
         need_connections_between = list(range(len(group_neighbors)))
-        while need_connections_between:
-            next_room_i = random.choice(need_connections_between)
+        for next_room_i in range(len(group_neighbors)):
+            if next_room_i not in need_connections_between:
+                continue
             other_room_is = [i for i in range(len(group_neighbors)) if i != next_room_i]
             random.shuffle(other_room_is)
             n1_subgroup = group_neighbors[next_room_i]
