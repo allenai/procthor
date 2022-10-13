@@ -20,7 +20,9 @@ from typing import Dict, Sequence, Union
 import matplotlib.pyplot as plt
 import numpy as np
 
+from collections import defaultdict
 from procthor.constants import EMPTY_ROOM_ID, OUTDOOR_ROOM_ID
+from procthor.generation.doors import get_room_spec_neighbors
 from procthor.generation.room_specs import RoomSpec
 from procthor.utils.types import InvalidFloorplan, LeafRoom, MetaRoom
 
@@ -444,6 +446,47 @@ def recursively_expand_rooms(
             )
 
 
+def is_valid_floorplan(floorplan, room_spec_neighbors):
+    neighboring_rooms = defaultdict(int)
+    neighbor_directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    for i in range(floorplan.shape[0]):
+        for j in range(floorplan.shape[1]):
+            for direction in neighbor_directions:
+                if i + direction[0] < 0 or i + direction[0] >= floorplan.shape[0]:
+                    continue
+                if j + direction[1] < 0 or j + direction[1] >= floorplan.shape[1]:
+                    continue
+                neighbor = floorplan[i + direction[0], j + direction[1]]
+                if (
+                    neighbor != floorplan[i, j]
+                    and neighbor != 1
+                    and floorplan[i, j] != 1
+                ):
+                    neighboring_rooms[(floorplan[i, j], neighbor)] = 1
+                    neighboring_rooms[(neighbor, floorplan[i, j])] = 1
+
+    is_valid = []
+    for room_spec_neighbor in room_spec_neighbors:
+        need_connections_between = list(range(len(room_spec_neighbor)))
+        for i, next_room_ids in enumerate(room_spec_neighbor):
+            for j in range(len(room_spec_neighbor)):
+                if i == j:
+                    continue
+                other_room_ids = room_spec_neighbor[j]
+                for a in next_room_ids:
+                    for b in other_room_ids:
+                        if neighboring_rooms.get((a, b)):
+                            if i in need_connections_between:
+                                need_connections_between.remove(i)
+                            if j in need_connections_between:
+                                need_connections_between.remove(j)
+        if len(need_connections_between) == 0 or len(room_spec_neighbor) == 1:
+            is_valid.append(True)
+        else:
+            is_valid.append(False)
+    return sum(is_valid) == len(room_spec_neighbors)
+
+
 def generate_floorplan(
     room_spec: np.ndarray,
     interior_boundary: np.ndarray,
@@ -483,5 +526,9 @@ def generate_floorplan(
             " spec. Try again with a another interior boundary.\n"
             f"interior_boundary:\n{interior_boundary}\n, room_spec:\n{room_spec}"
         )
+    
+    room_spec_neighbors = get_room_spec_neighbors(room_spec.spec)
+    if not is_valid_floorplan(best_floorplan, room_spec_neighbors):
+        raise InvalidFloorplan("Not all desired rooms in the floorplan can be connected!")
 
     return best_floorplan
