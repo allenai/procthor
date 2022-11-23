@@ -4,7 +4,7 @@ import logging
 import random
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Dict, List, Set, Tuple, Union, TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict, List, Set, Tuple, Union
 
 import pandas as pd
 from ai2thor.controller import Controller
@@ -23,6 +23,7 @@ from procthor.utils.types import (
     Vector3,
     Wall,
 )
+
 from ..databases import ProcTHORDatabase
 
 if TYPE_CHECKING:
@@ -526,6 +527,10 @@ class ProceduralFrame:
         bbox_with_offset["max"]["x"] -= asset_offset["x"]
         bbox_with_offset["max"]["y"] -= asset_offset["y"]
 
+        bounding_box = bbox_with_offset
+
+        asset = self.pt_db.ASSET_ID_DATABASE[self.asset_id]
+
         return Door(
             id=self.door_id,
             room0=room_0,
@@ -533,8 +538,16 @@ class ProceduralFrame:
             wall0=wall_0_id,
             wall1=wall_1_id,
             assetId=self.asset_id,
-            boundingBox=bbox_with_offset,
-            assetOffset=asset_offset,
+            assetPosition=Vector3(
+                x=bounding_box["min"]["x"]
+                + asset_offset["x"]
+                + asset["boundingBox"]["x"] / 2,
+                y=bounding_box["min"]["y"]
+                + asset_offset["y"]
+                + asset["boundingBox"]["y"] / 2,
+                z=0,
+            ),
+            holePolygon=[bounding_box["min"], bounding_box["max"]],
         )
 
 
