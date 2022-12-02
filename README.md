@@ -32,8 +32,9 @@ This code is used to generate houses for the [ProcTHOR](https://procthor.allenai
           Winson Han and Eric Kolve and Ali Farhadi and
           Aniruddha Kembhavi and Roozbeh Mottaghi},
   title={{ProcTHOR: Large-Scale Embodied AI Using Procedural Generation}},
-  journal={NeurIPS},
-  year={2022}
+  booktitle={NeurIPS},
+  year={2022},
+  note={Outstanding Paper Award}
 }
 ```
 
