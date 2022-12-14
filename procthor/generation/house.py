@@ -5,7 +5,7 @@ import logging
 import random
 from collections import Counter
 from functools import total_ordering
-from typing import Dict, Optional, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 from ai2thor.controller import Controller
@@ -13,19 +13,20 @@ from attrs import define
 from moviepy.editor import ImageSequenceClip
 from shapely.geometry import Point
 
-from procthor.constants import PROCTHOR_INITIALIZATION, SCHEMA, FLOOR_Y
+from procthor.constants import FLOOR_Y, PROCTHOR_INITIALIZATION, SCHEMA
 from procthor.generation.agent import AgentPose, generate_starting_pose
 from procthor.utils.types import (
     BoundingBox,
-    HouseDict,
-    Vector3,
-    Wall,
     Door,
-    Window,
+    HouseDict,
     Object,
     ProceduralParameters,
     RoomType,
+    Vector3,
+    Wall,
+    Window,
 )
+
 from .objects import ProceduralRoom
 from .room_specs import RoomSpec
 
@@ -237,6 +238,7 @@ class PartialHouse:
     windows: Optional[List[Window]] = None
     objects: Optional[List[Object]] = None
     walls: Optional[List[Wall]] = None
+    metadata: Optional[Dict[str, Any]] = None
 
     rooms: Optional[Dict[int, ProceduralRoom]] = None  # TODO: Should be `rooms_map`
     next_sampling_stage: Optional[NextSamplingStage] = NextSamplingStage.STRUCTURE
@@ -287,6 +289,7 @@ class PartialHouse:
                 reflections=[],
             ),
             next_sampling_stage=NextSamplingStage.DOORS,
+            metadata={"schema": SCHEMA},
         )
 
     def to_house_dict(self) -> HouseDict:
@@ -298,6 +301,7 @@ class PartialHouse:
             "objects": "objects",
             "walls": "walls",
             "procedural_parameters": "proceduralParameters",
+            "metadata": "metadata",
         }
         for k in from_to_map:
             val = getattr(self, k)

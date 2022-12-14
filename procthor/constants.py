@@ -12,7 +12,7 @@ other objects in the scene (e.g., there are no objects on top of the object,
 opening doesn't cause the size of the object to expand in the x/z direction.)
 """
 
-SCHEMA = "0.0.1"
+SCHEMA = "1.0.0"
 """The schema version of the json file to create the house."""
 
 MARGIN = {
@@ -62,7 +62,7 @@ probability of choosing the largest remaining one.
 MIN_RECTANGLE_SIDE_SIZE = 0.5
 """The minimum rectangle size per side, in meters, that can be chosen."""
 
-PROCTHOR_INITIALIZATION = dict(commit_id="391b3fae4d4cc026f1522e5acf60953560235971", scene="Procedural")
+PROCTHOR_INITIALIZATION = dict(branch="main", scene="Procedural")
 "Base AI2-THOR initialization parameters for ProcTHOR."
 
 FLOOR_Y = 0

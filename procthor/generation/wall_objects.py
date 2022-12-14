@@ -19,9 +19,10 @@ from procthor.utils.types import (
     Wall,
     Window,
 )
+
+from ..databases import ProcTHORDatabase
 from . import PartialHouse
 from .objects import AssetGroup, ProceduralRoom
-from ..databases import ProcTHORDatabase
 
 MAX_CENTER_Y_HEIGHT = 3
 """Clips the height of the wall.
@@ -421,9 +422,18 @@ def add_windows(
             ]
 
             asset_id = window["assetId"].iloc[0]
+            asset = pt_db.ASSET_ID_DATABASE[asset_id]
             wall_hole = pt_db.WALL_HOLES[asset_id]
 
             offset = wall_hole["offset"]
+            bounding_box = BoundingBox(
+                min=Vector3(x=min_x - offset["x"], y=min_y, z=0),
+                max=Vector3(
+                    x=min_x + wall_hole["max"]["x"] - offset["x"],
+                    y=min_y + wall_hole["max"]["y"] - offset["y"],
+                    z=0,
+                ),
+            )
 
             # NOTE: similar to doors, x is the direction along the wall,
             # where z is currently being ignored.
@@ -435,15 +445,16 @@ def add_windows(
                     room1=f"room|{room_id}",
                     wall0=room_line["wallId"],
                     wall1=f"wall|exterior{wall_order}",
-                    boundingBox=BoundingBox(
-                        min=Vector3(x=min_x - offset["x"], y=min_y, z=0),
-                        max=Vector3(
-                            x=min_x + wall_hole["max"]["x"] - offset["x"],
-                            y=min_y + wall_hole["max"]["y"] - offset["y"],
-                            z=0,
-                        ),
+                    holePolygon=[bounding_box["min"], bounding_box["max"]],
+                    assetPosition=Vector3(
+                        x=bounding_box["min"]["x"]
+                        + offset["x"]
+                        + asset["boundingBox"]["x"] / 2,
+                        y=bounding_box["min"]["y"]
+                        + offset["y"]
+                        + asset["boundingBox"]["y"] / 2,
+                        z=0,
                     ),
-                    assetOffset=wall_hole["offset"],
                 )
             )
 
@@ -502,9 +513,12 @@ def subtract_doors_and_windows(
             room_ids.append(int(obj["room1"][len("room|") :]))
 
         obj_width = pt_db.ASSET_ID_DATABASE[obj["assetId"]]["boundingBox"]["x"]
-        center_pos_along_wall = (
-            obj["boundingBox"]["min"]["x"] + obj["boundingBox"]["max"]["x"]
-        ) / 2
+        if "boundingBox" in obj:
+            center_pos_along_wall = (
+                obj["boundingBox"]["min"]["x"] + obj["boundingBox"]["max"]["x"]
+            ) / 2
+        else:
+            center_pos_along_wall = obj["assetPosition"]["x"]
 
         wall_0 = obj["wall0"] if obj["wall0"] is not None else obj["wall1"]
         p0 = wall_map[wall_0]["polygon"][0]

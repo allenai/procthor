@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING
 from ai2thor.controller import Controller
 
 from procthor.constants import OUTDOOR_ROOM_ID
-from procthor.utils.types import BoundaryGroups, Wall, Split
+from procthor.utils.types import BoundaryGroups, Split, Wall
+
 from ..databases import ProcTHORDatabase
 
 if TYPE_CHECKING:
@@ -45,6 +46,8 @@ def default_add_exterior_walls(
                     id=f"wall|exterior|{wall_order}",
                     polygon=list(reversed(house_wall["polygon"])),
                     roomId=room_id,
-                    material=material,
+                    material={
+                        "name": material,
+                    },
                 )
             )

@@ -32,10 +32,10 @@ def sample_wall_params(
     if random.random() < P_SAMPLE_SOLID_WALL_COLOR:
         return {
             "color": random.choice(pt_db.SOLID_WALL_COLORS),
-            "material": "PureWhite",
+            "name": "PureWhite",
         }
     return {
-        "material": random.choice(pt_db.MATERIAL_DATABASE["Wall"]),
+        "name": random.choice(pt_db.MATERIAL_DATABASE["Wall"]),
     }
 
 
@@ -48,14 +48,10 @@ def randomize_wall_materials(
     if random.random() < P_ALL_WALLS_SAME:
         wall_params = sample_wall_params(pt_db=pt_db)
         for wall in partial_house.walls:
-            for k, v in wall_params.items():
-                wall[k] = v
+            wall["material"] = wall_params
 
         # NOTE: set the ceiling
-        partial_house.procedural_parameters["ceilingMaterial"] = wall_params["material"]
-        if "color" in wall_params:
-            partial_house.procedural_parameters["ceilingColor"] = wall_params["color"]
-
+        partial_house.procedural_parameters["ceilingMaterial"] = wall_params
         return
 
     # NOTE: independently randomize each room's materials.
@@ -69,17 +65,12 @@ def randomize_wall_materials(
         wall_params_per_room[room_id] = sample_wall_params(pt_db=pt_db)
 
     for wall in partial_house.walls:
-        for k, v in wall_params_per_room[wall["roomId"]].items():
-            wall[k] = v
+        wall["material"] = wall_params_per_room[wall["roomId"]]
 
     # NOTE: randomize ceiling material
     partial_house.procedural_parameters["ceilingMaterial"] = wall_params_per_room[
         "ceiling"
-    ]["material"]
-    if "color" in wall_params_per_room["ceiling"]:
-        partial_house.procedural_parameters["ceilingColor"] = wall_params_per_room[
-            "ceiling"
-        ]["color"]
+    ]
 
 
 def randomize_floor_materials(
@@ -90,8 +81,12 @@ def randomize_floor_materials(
     if random.random() < P_ALL_FLOOR_SAME:
         floor_material = random.choice(pt_db.MATERIAL_DATABASE["Wood"])
         for room in partial_house.room_types:
-            room["floorMaterial"] = floor_material
+            room["floorMaterial"] = {
+                "name": floor_material
+            }
         return
 
     for room in partial_house.room_types:
-        room["floorMaterial"] = random.choice(pt_db.MATERIAL_DATABASE["Wood"])
+        room["floorMaterial"] = {
+            "name": random.choice(pt_db.MATERIAL_DATABASE["Wood"])
+        }
