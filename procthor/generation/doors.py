@@ -12,7 +12,7 @@ from attr import field
 from attrs import define
 from shapely.geometry import Polygon
 
-from procthor.constants import OUTDOOR_ROOM_ID
+from procthor.constants import OUTDOOR_ROOM_ID, EMPTY_ROOM_ID
 from procthor.utils.types import (
     BoundaryGroups,
     BoundingBox,
@@ -136,6 +136,8 @@ def select_outdoor_openings(
     # NOTE: Check preferred room types
     for room_id_1, room_id_2 in outdoor_candidates:
         room_id = room_id_1 if room_id_2 == OUTDOOR_ROOM_ID else room_id_2
+        if room_id == EMPTY_ROOM_ID:
+            continue
         room_type = room_type_map[room_id]
         if room_type in PREFERRED_ROOMS_TO_OUTSIDE:
             doors_to_outside.append((room_id_1, room_id_2))
@@ -147,6 +149,8 @@ def select_outdoor_openings(
     # NOTE: Check non preferred room types
     for room_id_1, room_id_2 in outdoor_candidates:
         room_id = room_id_1 if room_id_2 == OUTDOOR_ROOM_ID else room_id_2
+        if room_id == EMPTY_ROOM_ID:
+            continue
         room_type = room_type_map[room_id]
         if room_type not in PREFERRED_ROOMS_TO_OUTSIDE:
             doors_to_outside.append((room_id_1, room_id_2))
