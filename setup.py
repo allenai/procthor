@@ -19,6 +19,8 @@ setup(
         "python-sat",
         "python-fcl",
         "canonicaljson",
+        "ai2thor",
+        "moviepy",
     ],
     url="https://procthor.allenai.org/",
     classifiers=[
