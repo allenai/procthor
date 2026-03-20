@@ -79,7 +79,9 @@ def default_add_small_objects(
     event = controller.step(
         action="CreateHouse", house=partial_house.to_house_dict(), renderImage=False
     )
-    assert event, "Unable to CreateHouse!"
+    if not event:
+    err = event.metadata.get("errorMessage", "unknown")
+    raise RuntimeError(f"CreateHouse failed: {err}")
     controller.step(action="SetObjectFilter", objectIds=[])
 
     # NOTE: Get the objects in the room.

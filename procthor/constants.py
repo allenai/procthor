@@ -62,6 +62,9 @@ probability of choosing the largest remaining one.
 MIN_RECTANGLE_SIDE_SIZE = 0.5
 """The minimum rectangle size per side, in meters, that can be chosen."""
 
+# branch="main" downloads the latest ai2thor unity build on every run.
+# when that build changes, CreateHouse silently fails with no useful error.
+# a specific commit_id should be pinned here once confirmed by maintainers.
 PROCTHOR_INITIALIZATION = dict(branch="main", scene="Procedural")
 "Base AI2-THOR initialization parameters for ProcTHOR."
 
